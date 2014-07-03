@@ -3,19 +3,18 @@ NativeLibCompression
 
 There are lots of NDK apps on Google software market. To reduce package size, some ISV will only release Separate APK. A native library compression sdk is given to solve the apk size problem. It is easy to integrate and will get max 50% size decreasing. Beside sdk, a Java tool for package is provided to convert normal apk to compressed apk.
 
-How to use it:
+HOW TO USE IT:
 
-1. Include DecRawso into your project
+1.Include DecRawso into your project
 
-2. Call DecRawso.NewInstance before native library loading
+2.Call DecRawso.NewInstance before native library loading
 
-3. Replace all system.loadlibrary(***) to system.load(DecRawso . GetInstance ().GetPath(***))
+3.Replace all system.loadlibrary(***) to system.load(DecRawso . GetInstance ().GetPath(***))
 
 --- build your apk as usual, and run your apk as usual when in your development, the apk is not compressed.
 
-How to compress the apk:
 
-Use compress tool : ApkLibCompress	
+HOW TO COMPRESS THE APK: -- Use compress tool : ApkLibCompress	
 
 1.You can use it as:  ComPressApk.jar -a C:/my/test.apk -k c:/key storepass keypass alias [your keyname] -x86 http://www.test.com
 
