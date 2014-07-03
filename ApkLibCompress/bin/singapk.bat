@@ -1,0 +1,2 @@
+java -classpath  tools.jar sun.security.tools.JarSigner -keystore C:\Users\yli162\.android\debug.keystore -storepass android -keypass android -sigfile CERT %1 androiddebugkey
+windows\zipalign -v 4 %1 %2
