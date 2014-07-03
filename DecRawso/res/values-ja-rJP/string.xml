@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="ReStrat">重启</string>
+    <string name="Continue">続ける</string>
+    <string name="OK">确定</string>
+    <string name="Optimization">最適化</string>
+    <string name="TackEffect_Restart">最適化が完了すると、再起動後に有効になります</string>
+    <string name="Insufficient_Memory">メモリが不足し、お使いのデバイスを再起動</string>
+    <string name="Insufficient_Storage">不十分な収納スペースは、いくつかの領域を解放</string>
+    <string name="Unknown_Error">不明なエラー</string>
+
+    <string name="Initial_Error">初期誤差</string>
+    <string name="Quit">やめる</string>
+    <string name="Initializing">初期化</string>
+    <string name="Wait">しばらくお待ちください</string>
+    
+</resources>

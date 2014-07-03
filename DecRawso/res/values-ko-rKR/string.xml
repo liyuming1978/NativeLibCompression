@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="ReStrat">재부팅</string>
+    <string name="Continue">계속</string>
+    <string name="OK">OK</string>
+    <string name="Optimization">최적화</string>
+    <string name="TackEffect_Restart">최적화 완료, 다시 시작하면 적용</string>
+    <string name="Insufficient_Memory">메모리가 부족하여 장치를 다시 부팅</string>
+    <string name="Insufficient_Storage">저장 공간이 부족은 공간을 확보</string>
+    <string name="Unknown_Error">알 수없는 오류</string>
+
+    <string name="Initial_Error">초기 오류</string>
+    <string name="Quit">종료</string>
+    <string name="Initializing">초기화</string>
+    <string name="Wait">기다려주십시오</string>
+        
+</resources>

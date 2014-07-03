@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="ReStrat">перезапуск</string>
+    <string name="Continue">продолжать</string>
+    <string name="OK">хорошо</string>
+    <string name="Optimization">оптимизация</string>
+    <string name="TackEffect_Restart">Оптимизация полной, вступают в силу после перезагрузки</string>
+    <string name="Insufficient_Memory">Недостаточно памяти, перезагрузить устройство</string>
+    <string name="Insufficient_Storage">Недостаточно места для хранения, освободить место</string>
+    <string name="Unknown_Error">Неизвестная ошибка</string>
+
+    <string name="Initial_Error">начальная ошибка</string>
+    <string name="Quit">выход</string>
+    <string name="Initializing">Инициализация</string>
+    <string name="Wait">Ждите</string>
+        
+</resources>

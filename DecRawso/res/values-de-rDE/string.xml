@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="ReStrat">Restart</string>
+    <string name="Continue">fortsetzen</string>
+    <string name="OK">OK</string>
+    <string name="Optimization">Optimierung</string>
+    <string name="TackEffect_Restart">Optimierung vollständig, wirksam nach Restart</string>
+    <string name="Insufficient_Memory">Nicht genügend Speicher, starten Sie Ihr Gerät</string>
+    <string name="Insufficient_Storage">Zu wenig Stauraum, mehr Platz</string>
+    <string name="Unknown_Error">Unbekannter Fehler</string>
+    
+    <string name="Initial_Error">Anfängliche Fehler</string>
+    <string name="Quit">Verlassen</string>
+    <string name="Initializing">Initialisieren</string>
+    <string name="Wait">Bitte warten</string>
+    
+</resources>
