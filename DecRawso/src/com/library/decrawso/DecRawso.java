@@ -49,9 +49,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.List;
+
+import dalvik.system.BaseDexClassLoader;
+import dalvik.system.DexClassLoader;
+import dalvik.system.PathClassLoader;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -123,6 +132,60 @@ public class DecRawso {
 	//public final static int  SZ_ERROR_ARCHIVE = 16;
 	//public final static int  SZ_ERROR_NO_ARCHIVE = 17;	
 	
+	
+	private class CrashHandler implements UncaughtExceptionHandler {
+		//系统默认的UncaughtException处理类 
+		private Thread.UncaughtExceptionHandler mDefaultHandler;
+
+		public CrashHandler() {
+			//获取系统默认的UncaughtException处理器
+			mDefaultHandler = Thread.getDefaultUncaughtExceptionHandler();
+			//设置该CrashHandler为程序的默认处理器
+			Thread.setDefaultUncaughtExceptionHandler(this);
+		}
+
+		/**
+		 * 当UncaughtException发生时会转入该函数来处理
+		 */
+		@Override
+		public void uncaughtException(Thread thread, Throwable ex) {
+			if (!handleException(ex) && mDefaultHandler != null) {
+				//如果用户没有处理则让系统默认的异常处理器来处理
+				mDefaultHandler.uncaughtException(thread, ex);
+			} else {
+				showToastInThread(mAppContext.getResources().getString(R.string.ReStrat));
+				//退出程序
+				android.os.Process.killProcess(android.os.Process.myPid());
+				System.exit(1);
+			}
+		}
+
+		/**
+		 * 自定义错误处理,收集错误信息 发送错误报告等操作均在此完成.
+		 * 
+		 * @param ex
+		 * @return true:如果处理了该异常信息;否则返回false.
+		 */
+		private boolean handleException(Throwable ex) {
+			if ((ex instanceof UnsatisfiedLinkError)) {
+				if(abi.startsWith("x86"))
+				{
+					String[] exmsgs = ex.getMessage().split(" ");
+					if(exmsgs[0].compareTo("Couldn't")==0 && exmsgs[1].compareTo("load")==0)
+						GetPath(exmsgs[2]);  //check file is exist or not
+				}
+				else
+				{
+					waitdecoding();
+					return false;
+				}
+				return true;
+			}
+			
+			return false;
+		}
+	}	
+	
 	public static void ConfigureFilter(String filter,String fix)
 	{
 		sFilter = filter;
@@ -135,17 +198,8 @@ public class DecRawso {
 	
 	private void delteFilter()
 	{
-		if(mDec7zLibThread!=null)
-		{
-			//when decoding , can not load so, need wait
-			try {
-				mDec7zLibThread.join();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			mDec7zLibThread = null;			
-		}	
+		waitdecoding();
+		
 		if(bWorkat7z)
 		{
 			boolean findfix = false;
@@ -171,6 +225,21 @@ public class DecRawso {
 				}  			
 			}
 		}
+	}
+	
+	private void waitdecoding()
+	{
+		if(mDec7zLibThread!=null)
+		{
+			//when decoding , can not load so, need wait
+			try {
+				mDec7zLibThread.join();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			mDec7zLibThread = null;		
+		}	
 	}
 	
 	private void myreboot()
@@ -232,7 +301,89 @@ public class DecRawso {
 	{		
 	}
 	
+	@SuppressLint("NewApi")
+	private void HackSystemICS()
+	{
+		try{
+			Field fieldSysPath = BaseDexClassLoader.class.getDeclaredField("pathList");  
+	        fieldSysPath.setAccessible(true);
+	        Object paths = (Object)fieldSysPath.get(this.getClass().getClassLoader());  
+	        Class c = paths.getClass();
+	        Field Libpaths = c.getDeclaredField("nativeLibraryDirectories");
+	        Libpaths.setAccessible(true);
+	        
+	        File[] nativepaths = (File[])Libpaths.get(paths);        
+	        File[] tmp = new File[nativepaths.length+1];     
+	        System.arraycopy(nativepaths,0,tmp,0,nativepaths.length);     
+	        tmp[nativepaths.length] = new File(sPathName);     
+	        Libpaths.set(paths, tmp);
 
+		}catch (Exception e) {
+			e.printStackTrace();
+		}				
+	}
+	
+	private boolean HackSystemLow3() //even older
+	{
+		boolean bret = true;
+		Field fieldSysPath;
+		
+		try{
+			fieldSysPath = DexClassLoader.class.getDeclaredField("mLibPaths");  
+	        fieldSysPath.setAccessible(true);
+	        
+	        String[] paths = (String[])fieldSysPath.get(this.getClass().getClassLoader());  
+	        String[] tmp= new String[paths.length+1];
+	        System.arraycopy(paths,0,tmp,0,paths.length);     
+	        tmp[paths.length] = sPathName;
+	        fieldSysPath.set(this.getClass().getClassLoader(), tmp);
+
+		}catch (Exception e) {
+			e.printStackTrace();
+			bret = false;
+		}
+		return bret;
+	}	
+	
+	private boolean HackSystemLow2()  //for 2.2
+	{
+		boolean bret = true;
+		try{
+			Field fieldSysPath = PathClassLoader.class.getDeclaredField("mLibPaths");  
+	        fieldSysPath.setAccessible(true);
+	        
+	        String[] paths = (String[])fieldSysPath.get(this.getClass().getClassLoader());  
+	        String[] tmp= new String[paths.length+1];
+	        System.arraycopy(paths,0,tmp,0,paths.length);     
+	        tmp[paths.length] = sPathName;
+	        fieldSysPath.set(this.getClass().getClassLoader(), tmp);
+
+		}catch (Exception e) {
+			e.printStackTrace();
+			bret = false;
+		}
+		return bret;
+	}	
+	
+	private boolean HackSystemLow1()  //for 2.3
+	{
+		boolean bret = true;
+		try{
+			Field fieldSysPath = PathClassLoader.class.getDeclaredField("libraryPathElements");  
+	        fieldSysPath.setAccessible(true);
+	        
+	        List<String> paths = (List<String>)fieldSysPath.get(this.getClass().getClassLoader());  
+	        paths.add(sPathName);
+	        //fieldSysPath.set(paths, paths);
+
+		}catch (Exception e) {
+			e.printStackTrace();
+			bret = false;
+		}
+		return bret;
+	}	
+
+	
 	public static boolean getX86Cpu()   //someone say : build.prop abi can be changed
 	{
 		boolean retc = false;
@@ -307,7 +458,7 @@ public class DecRawso {
 	            PackageInfo packageInfo = cont.getApplicationContext()  
 	                    .getPackageManager().getPackageInfo(cont.getPackageName(), 0);  
 	            localVersion = packageInfo.versionCode;  
-	            if(Build.VERSION.SDK_INT>=9)
+	            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.GINGERBREAD)
 	            	lasttime = GetLastTime(packageInfo);
 	        } catch (NameNotFoundException e) {  
 	            e.printStackTrace();  
@@ -370,6 +521,20 @@ public class DecRawso {
         		filecloud = null;
     		}
 		}
+
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+        	HackSystemICS();	
+        else
+        {
+        	if(!HackSystemLow1())
+        	{
+        		if(!HackSystemLow2())
+        			HackSystemLow3();
+        	}
+        }
+        
+        new CrashHandler();      
+        		
 		if(!bSendDecEnd)  //send HDL_MSGDECEND for any
 			SendDecEndMsg(0);
 	}
@@ -425,7 +590,7 @@ public class DecRawso {
 			int res;
 			if(bLocalDec)
 			{
-				if(Build.VERSION.SDK_INT<9) //decode on android2.2
+				if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD) //decode on android2.2
 				{
 					res = readRawso(sAppFilePath+"/lib/rawso22");
 					if(res==0)
@@ -476,7 +641,7 @@ public class DecRawso {
     			 mAppContext.registerReceiver(mNetworkStateReceiver, filter);
     		}
     		
-    		if(Build.VERSION.SDK_INT<9) //decode on android2.2
+    		if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD) //decode on android2.2
     		{
     			File fileraw22 = new File(sAppFilePath+"/lib/rawso22");
     			if(fileraw22.exists())
@@ -514,7 +679,7 @@ public class DecRawso {
 	
 	private void Dec7zLib(boolean showProgress,boolean bLocalDec,Context cont)
 	{
-		if(Build.VERSION.SDK_INT<9)
+		if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD)
 			System.loadLibrary("DecRawso22");
 		else
 			System.loadLibrary("DecRawso");		
@@ -778,17 +943,8 @@ public class DecRawso {
 	
 	public String GetPath(String libname)
 	{
-		if(mDec7zLibThread!=null)
-		{
-			//when decoding , can not load so, need wait
-			try {
-				mDec7zLibThread.join();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			mDec7zLibThread = null;			
-		}
+		waitdecoding();
+		
 		if(bWorkat7z)
 		{
 			//if work at 7z mode, but find the so is clear, reboot to decode again
