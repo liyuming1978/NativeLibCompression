@@ -1,7 +1,9 @@
 package compress.unzipapk;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +12,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -72,7 +75,7 @@ public class ComPressApk {
 	
 	public static void main(String[] args) {
 		int i;
-		String JarPath;
+		String JarPath=null;
 		boolean bOnly = false;
 		
 		if(args.length<=1 || args[0].compareToIgnoreCase("-h")==0)
@@ -281,7 +284,7 @@ public class ComPressApk {
 		
 		String cmdfolder = "";
 		if((libx86=new File(ApkZiptmpname+"/lib/x86")).exists())
-		{
+		{	
 			cmdfolder+=" "+libx86.getAbsolutePath();
 			x86tmp=makeCloud(x86Link, "x86", ApkZiptmpname, cloudso, libx86);
 		}
@@ -312,6 +315,74 @@ public class ComPressApk {
 		{
 			cmdfolder+=" "+libmips64.getAbsolutePath();
 			mips64tmp=makeCloud(mips64Link, "mips64", ApkZiptmpname, cloudso, libmips64);			
+		}
+		
+		//check x86 library
+		if(libx86.exists())
+		{
+			boolean detecterror=false;
+			ArrayList<String> amrlibarrary= new ArrayList<String>();
+			ArrayList<String> amrx86arrary= new ArrayList<String>();
+			
+			try {
+				BufferedWriter porterr = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(JarPath+"/porting.log")));			
+				File[] files;
+				if(libarm.exists())
+				{
+					files = libarm.listFiles();
+					for(File file:files)
+					{
+						amrlibarrary.add(file.getName());
+					}
+				}
+				if(libarmv7.exists())
+				{
+					files = libarmv7.listFiles();
+					for(File file:files)
+					{
+						amrlibarrary.add(file.getName());
+					}
+				}
+				files = libx86.listFiles();
+				for(File file:files)
+				{
+					if(OsCommand.getInstance().IsArmShareLibrary(file.getAbsolutePath()))
+						amrx86arrary.add(file.getName());
+				}
+
+				for(File file:files)
+				{
+					ArrayList<String> libarray = OsCommand.getInstance().GetShareLibrary(file.getAbsolutePath());
+					for(int ia=0;ia<libarray.size();ia++)
+					{
+						if(amrx86arrary.contains(libarray.get(ia))) //the arm lib in x86 folder has reference with x86 lib
+						{
+							porterr.write("x86\\"+file.getName()+" has directly call armlib(x86\\"+libarray.get(ia)+")");
+							porterr.newLine();
+							detecterror = true;
+						}
+						else if(amrlibarrary.contains(libarray.get(ia))) //the lib is only exist arm folder , lib miss in x86
+						{
+							porterr.write("x86\\"+libarray.get(ia)+" is miss");
+							porterr.newLine();
+							detecterror = true;
+						}
+					}
+					
+				}
+
+				porterr.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			if(detecterror)
+			{
+				deleteDir(new File(ApkZiptmpname));
+				JOptionPane.showMessageDialog(null,"x86 porting error, see porting.log");
+				return;
+			}
 		}
 		
 		//LZMA compress

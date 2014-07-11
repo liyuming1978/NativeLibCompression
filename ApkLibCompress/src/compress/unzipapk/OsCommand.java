@@ -3,6 +3,7 @@ package compress.unzipapk;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
 
@@ -65,6 +66,7 @@ public class OsCommand {
 					while(br.readLine()!=null); 
 					Thread.sleep(50);
 				} 
+				br.close();
 			} catch (Exception e) { 
 				e.printStackTrace(); 
 			} 
@@ -153,5 +155,107 @@ public class OsCommand {
         }     		
 		return true;
 	}		
+	
+	public ArrayList<String> GetShareLibrary(String libname)
+	{
+		boolean IsX86Lib=false;
+		String LineStr=null;
+		ArrayList<String> libarrary = new ArrayList<String>();
+		Runtime rn=Runtime.getRuntime();
+		
+		if(!libname.endsWith(".so"))
+			return libarrary;
+		
+        try{
+        	Process process = rn.exec(JarPath+"readelf -h "+libname);
+        	if(process != null)
+        	{
+	        	BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream())); 
+				while((LineStr=br.readLine())==null) //wait output,if the output is just once, use it ok, otherwise must use thread
+					Thread.sleep(50);
+				while(LineStr!=null)
+				{
+					if(LineStr.indexOf("Intel")>-1)
+					{
+						IsX86Lib = true;
+						break;
+					}						
+					LineStr = br.readLine();
+				}
+				if(LineStr!=null)
+					while(br.readLine()!=null);
+				
+				br.close();
+				process.waitFor();
+        	}
+        	if(IsX86Lib) //only detect x86 lib
+        	{
+        		process = rn.exec(JarPath+"readelf -d "+libname);
+        		if(process != null)
+            	{
+    	        	BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream())); 
+    	        	while((LineStr=br.readLine())==null) //wait output,if the output is just once, use it ok, otherwise must use thread
+    					Thread.sleep(50);
+    				while(LineStr!=null)
+    				{
+    	  				if(LineStr.indexOf("Shared library")>-1)
+    	  				{
+    	  					String[] getnames = LineStr.split("\\[");
+    	  					if(getnames.length>1 && getnames[1].startsWith("lib"))
+    	  					{
+    	  						libarrary.add(getnames[1].substring(0, getnames[1].length()-1));
+    	  					}
+    	  				}
+    					LineStr = br.readLine();
+    				}
+    				br.close();
+    				process.waitFor();
+            	}
+        	}
+        }catch(Exception e){
+        	JOptionPane.showMessageDialog(null,"Error: GetShareLibrary "+libname);
+        	return libarrary; 
+        }     					
+		return libarrary;
+	}
+	
+	public boolean IsArmShareLibrary(String libname)
+	{
+		boolean IsArmLib=false;
+		String LineStr=null;
+		Runtime rn=Runtime.getRuntime();
+		
+		if(!libname.endsWith(".so"))
+			return false;
+		
+        try{
+        	Process process = rn.exec(JarPath+"readelf -h "+libname);
+        	if(process != null)
+        	{
+	        	BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream())); 
+				while((LineStr=br.readLine())==null) //wait output,if the output is just once, use it ok, otherwise must use thread
+					Thread.sleep(50);
+				while(LineStr!=null)
+				{
+					if(LineStr.indexOf("ARM")>-1)
+					{
+						IsArmLib = true;
+						break;
+					}						
+					LineStr = br.readLine();
+				}
+				if(LineStr!=null)
+					while(br.readLine()!=null);
+				
+				br.close();
+				process.waitFor();
+        	}
+
+        }catch(Exception e){
+        	JOptionPane.showMessageDialog(null,"Error: IsArmShareLibrary "+libname);
+        	return false; 
+        }     					
+		return IsArmLib;
+	}	
 	
 }
