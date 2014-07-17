@@ -100,19 +100,18 @@ public class DecRawso {
 	private String sAppFilePath=null;
 	private boolean bWorkat7z=false;
 	private boolean b7zDecoding;
-	private Thread mCloudThread=null;
+
 	private Thread mDec7zLibThread=null;
-	private HttpURLConnection httpURLConnection=null;
 	private int localVersion=0;
 	private long lasttime=0;
 	private String abi=null;
 	private Context mAppContext;
 	private Handler mHdl;
 	private ProgressDialog dProDlg;
-	private NetworkConnectChangedReceiver mNetworkStateReceiver;
-
-	private final static int TIMEOUT = 10 * 1000;//
 	
+	private UtilsFunc mUtils = new UtilsFunc();
+	private CloudDownloader mCloudDlr = new CloudDownloader();
+
 	private final static int HDL_MSGBASE = 54321;	
 	public final static int  HDL_MSGDECEND = 1+HDL_MSGBASE;
 	//public final static int  HDL_MSGDOWNLOADEND = 2+HDL_MSGBASE;
@@ -153,7 +152,7 @@ public class DecRawso {
 				//如果用户没有处理则让系统默认的异常处理器来处理
 				mDefaultHandler.uncaughtException(thread, ex);
 			} else {
-				showToastInThread(mAppContext.getResources().getString(R.string.ReStrat));
+				mUtils.showToastInThread(mAppContext.getResources().getString(R.string.ReStrat),mAppContext);
 				//退出程序
 				android.os.Process.killProcess(android.os.Process.myPid());
 				System.exit(1);
@@ -168,7 +167,7 @@ public class DecRawso {
 		 */
 		private boolean handleException(Throwable ex) {
 			if ((ex instanceof UnsatisfiedLinkError)) {
-				if(abi.startsWith("x86"))
+				if(abi.contains("x86"))
 				{
 					String[] exmsgs = ex.getMessage().split(" ");
 					if(exmsgs[0].compareTo("Couldn't")==0 && exmsgs[1].compareTo("load")==0)
@@ -301,87 +300,6 @@ public class DecRawso {
 	{		
 	}
 	
-	@SuppressLint("NewApi")
-	private void HackSystemICS()
-	{
-		try{
-			Field fieldSysPath = BaseDexClassLoader.class.getDeclaredField("pathList");  
-	        fieldSysPath.setAccessible(true);
-	        Object paths = (Object)fieldSysPath.get(this.getClass().getClassLoader());  
-	        Class c = paths.getClass();
-	        Field Libpaths = c.getDeclaredField("nativeLibraryDirectories");
-	        Libpaths.setAccessible(true);
-	        
-	        File[] nativepaths = (File[])Libpaths.get(paths);        
-	        File[] tmp = new File[nativepaths.length+1];     
-	        System.arraycopy(nativepaths,0,tmp,0,nativepaths.length);     
-	        tmp[nativepaths.length] = new File(sPathName);     
-	        Libpaths.set(paths, tmp);
-
-		}catch (Exception e) {
-			e.printStackTrace();
-		}				
-	}
-	
-	private boolean HackSystemLow3() //even older
-	{
-		boolean bret = true;
-		Field fieldSysPath;
-		
-		try{
-			fieldSysPath = DexClassLoader.class.getDeclaredField("mLibPaths");  
-	        fieldSysPath.setAccessible(true);
-	        
-	        String[] paths = (String[])fieldSysPath.get(this.getClass().getClassLoader());  
-	        String[] tmp= new String[paths.length+1];
-	        System.arraycopy(paths,0,tmp,0,paths.length);     
-	        tmp[paths.length] = sPathName;
-	        fieldSysPath.set(this.getClass().getClassLoader(), tmp);
-
-		}catch (Exception e) {
-			e.printStackTrace();
-			bret = false;
-		}
-		return bret;
-	}	
-	
-	private boolean HackSystemLow2()  //for 2.2
-	{
-		boolean bret = true;
-		try{
-			Field fieldSysPath = PathClassLoader.class.getDeclaredField("mLibPaths");  
-	        fieldSysPath.setAccessible(true);
-	        
-	        String[] paths = (String[])fieldSysPath.get(this.getClass().getClassLoader());  
-	        String[] tmp= new String[paths.length+1];
-	        System.arraycopy(paths,0,tmp,0,paths.length);     
-	        tmp[paths.length] = sPathName;
-	        fieldSysPath.set(this.getClass().getClassLoader(), tmp);
-
-		}catch (Exception e) {
-			e.printStackTrace();
-			bret = false;
-		}
-		return bret;
-	}	
-	
-	private boolean HackSystemLow1()  //for 2.3
-	{
-		boolean bret = true;
-		try{
-			Field fieldSysPath = PathClassLoader.class.getDeclaredField("libraryPathElements");  
-	        fieldSysPath.setAccessible(true);
-	        
-	        List<String> paths = (List<String>)fieldSysPath.get(this.getClass().getClassLoader());  
-	        paths.add(sPathName);
-	        //fieldSysPath.set(paths, paths);
-
-		}catch (Exception e) {
-			e.printStackTrace();
-			bret = false;
-		}
-		return bret;
-	}	
 
 	
 	public static boolean getX86Cpu()   //someone say : build.prop abi can be changed
@@ -389,10 +307,26 @@ public class DecRawso {
 		boolean retc = false;
 		String x86abi = android.os.Build.CPU_ABI;
 		
-		if(x86abi.startsWith("x86"))
+		if(x86abi.contains("x86")||x86abi.contains("x32"))
 			return true;
-		else //if(x86abi.startsWith("armeabi-v7a")) //avoid any changes
+		else //if(x86abi.contains("armeabi-v7a")) //avoid any changes
 		{
+			Process process;
+			try {
+				process = Runtime.getRuntime().exec("getprop ro.product.cpu.abi");
+	            InputStreamReader ir = new InputStreamReader(process.getInputStream());
+	            BufferedReader input = new BufferedReader(ir);
+	            String tmpabi = input.readLine();
+	            input.close();
+	            
+	            if(tmpabi.contains("x86")||tmpabi.contains("x32"))
+	            	retc =true;
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+/*
+
 			try {
 				if(new File("/sys/devices/system/cpu/modalias").exists())
 				{
@@ -408,9 +342,37 @@ public class DecRawso {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+*/
 		}
 		return retc;
 	}
+	
+	private String getX86abi()   //someone say : build.prop abi can be changed
+	{
+		String x86abi = android.os.Build.CPU_ABI;
+		
+		if(x86abi.contains("x86")||x86abi.contains("x32"))
+			return x86abi;
+		else //if(x86abi.contains("armeabi-v7a")) //avoid any changes
+		{
+			Process process;
+			try {
+				process = Runtime.getRuntime().exec("getprop ro.product.cpu.abi");
+	            InputStreamReader ir = new InputStreamReader(process.getInputStream());
+	            BufferedReader input = new BufferedReader(ir);
+	            String tmpabi = input.readLine();
+	            input.close();
+	            
+	            if(tmpabi.contains("x86")||tmpabi.contains("x32"))
+	            	return tmpabi;
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+		}
+		return null;
+	}	
 	
 	private DecRawso(Context cont,Handler hdl,boolean showProgress)
 	{	
@@ -429,18 +391,15 @@ public class DecRawso {
 		AssetFileDescriptor fd=null;
  
 		abi = android.os.Build.CPU_ABI;
-		if(!abi.startsWith("arm") && !abi.startsWith("x86") && !abi.startsWith("mips"))
+		if(!abi.contains("arm") && !abi.contains("x86") && !abi.contains("mips") && !abi.contains("x32"))
 			abi="armeabi";	
 		//todo:  x86 now will detect as armeabi-v7a
-		if(getX86Cpu())
+		String tmpx86abi = getX86abi();
+		if(tmpx86abi!=null)
 		{
-			if(!abi.startsWith("x86"))
-			{
-				if(abi.startsWith("arm64"))
-					abi="x86_64";
-				else
-					abi="x86";
-			}
+			abi = tmpx86abi;
+			if(abi.contains("x32"))
+				abi = "x86";
 		}
 		
 		//may error , so fd = null
@@ -474,7 +433,7 @@ public class DecRawso {
         		else  //delete all sub files
         		{
         			File forcearm = new File(sAppFilePath+"/lib/_FORCEARM_.tmp");
-        			if(forcearm.exists() && abi.startsWith("x86"))  //x86 lib miss, we can use arm lib
+        			if(forcearm.exists() && abi.contains("x86"))  //x86 lib miss, we can use arm lib
         				abi="armeabi-v7a";
         				
 	    			File[] allfiles = filedir.listFiles();
@@ -497,10 +456,7 @@ public class DecRawso {
         		File filecloud = new File(sAppFilePath+"/lib/cloud.txt");
         		if(filecloud.exists())  //need download
         		{
-        			 IntentFilter filter = new IntentFilter();
-        			 filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-        			 mNetworkStateReceiver = new NetworkConnectChangedReceiver();
-        			 mAppContext.registerReceiver(mNetworkStateReceiver, filter);
+        			mCloudDlr.RegisterCloudDownloader(mAppContext, sAppFilePath);
         		}
         		else
         		{
@@ -523,13 +479,13 @@ public class DecRawso {
 		}
 
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-        	HackSystemICS();	
+        	mUtils.HackSystemICS(sPathName);	
         else
         {
-        	if(!HackSystemLow1())
+        	if(!mUtils.HackSystemLow1(sPathName))
         	{
-        		if(!HackSystemLow2())
-        			HackSystemLow3();
+        		if(!mUtils.HackSystemLow2(sPathName))
+        			mUtils.HackSystemLow3(sPathName);
         	}
         }
         
@@ -635,10 +591,7 @@ public class DecRawso {
     		File filecloud = new File(sAppFilePath+"/lib/cloud.txt");
     		if(filecloud.exists())  //need download
     		{
-    			 IntentFilter filter = new IntentFilter();
-    			 filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-    			 mNetworkStateReceiver = new NetworkConnectChangedReceiver();
-    			 mAppContext.registerReceiver(mNetworkStateReceiver, filter);
+    			mCloudDlr.RegisterCloudDownloader(mAppContext, sAppFilePath);
     		}
     		
     		if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD) //decode on android2.2
@@ -657,7 +610,7 @@ public class DecRawso {
         	{
         		if(res!=0)
         		{
-        			showToastInThread(geterror(res));
+        			mUtils.showToastInThread(geterror(res),mAppContext);
         			if(!bLocalDec)
         			{
 						File forcearm = new File(sPathName+"_FORCEARM_.tmp");
@@ -697,79 +650,7 @@ public class DecRawso {
 		mDec7zLibThread.start();
 	}
 	
-	private boolean downloadCloudFile(String down_url, String file)
-			throws Exception {
-		int down_step = 5;// step
-		long totalSize;// totalsize
-		long downloadCount = 0;
-		int updateCount = 0;
-		InputStream inputStream;
-		OutputStream outputStream;
 
-		URL url = new URL(down_url);
-		httpURLConnection = (HttpURLConnection) url
-				.openConnection();
-		httpURLConnection.setConnectTimeout(TIMEOUT);
-		//httpURLConnection.setReadTimeout(TIMEOUT);
-		//httpURLConnection.setRequestProperty("Accept-Encoding", "identity");
-		//httpURLConnection.setRequestMethod("GET");
-		//httpURLConnection.setRequestProperty("Connection", "Keep-Alive");    
-		//httpURLConnection.connect();
-		// 
-		totalSize = httpURLConnection.getContentLength();
-		if (httpURLConnection.getResponseCode() == 404 || totalSize<=0) {
-			throw new Exception("fail!");
-		}
-		if (httpURLConnection != null) {
-			httpURLConnection.disconnect();
-		}
-		
-		File downloadis = new File(file);
-		if(downloadis.exists())
-			downloadCount = downloadis.length();
-		
-		if(downloadCount<totalSize)
-		{
-			outputStream = new FileOutputStream(file, true);// if file is exist , than pending at end
-			//
-			httpURLConnection = (HttpURLConnection) url
-					.openConnection();
-			httpURLConnection.setConnectTimeout(TIMEOUT);
-			//httpURLConnection.setReadTimeout(TIMEOUT);
-			//httpURLConnection.setRequestProperty("Accept-Encoding", "identity");
-			httpURLConnection.setRequestMethod("GET");
-			httpURLConnection.setRequestProperty("Connection", "Keep-Alive");    		
-			httpURLConnection.setRequestProperty("Range", "bytes="+downloadCount+ "-" + (totalSize-1));
-			inputStream = httpURLConnection.getInputStream();
-	
-			byte buffer[] = new byte[1024];
-			int readsize = 0;
-			while ((readsize = inputStream.read(buffer)) != -1) {
-				outputStream.write(buffer, 0, readsize);
-				//outputStream.flush();
-				downloadCount += readsize;//
-				/**
-				 * 5% each time
-				 */
-				if (updateCount == 0
-						|| (downloadCount * 100 / totalSize - down_step) >= updateCount) {
-					updateCount += down_step;
-					// 
-					// notification.setLatestEventInfo(this, "downloading...", updateCount
-					// + "%" + "", pendingIntent);
-				}
-			}			
-			inputStream.close();
-			outputStream.close();
-			
-			if (httpURLConnection != null) {
-				httpURLConnection.disconnect();
-				httpURLConnection = null;
-			}
-		}
-
-		return downloadCount>=totalSize;
-	}	
 	
 	private String geterror(int errcode)
 	{
@@ -836,111 +717,6 @@ public class DecRawso {
 	}
 	*/
 	
-	class ToastThread implements Runnable	
-	{
-		private String msgstr;
-		private Looper lp;
-		public ToastThread(String _msgstr)
-		{
-			msgstr = _msgstr;
-		}
-		public Looper getItLooper()
-		{
-			return lp;
-		}
-		@Override
-		public void run() {   
-			Looper.prepare();  
-			lp = Looper.myLooper();
-	        Toast.makeText(mAppContext,msgstr,Toast.LENGTH_LONG).show();  
-	        Looper.loop(); 
-		}
-	}
-	private boolean showToastInThread(String msgstr)
-	{
-		ToastThread runToast = new ToastThread(msgstr);
-		Thread tmpToastThread = new Thread(runToast);
-		tmpToastThread.start();
-		try {
-			tmpToastThread.join(5000);
-			runToast.getItLooper().quit();
-			tmpToastThread.join();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        return true;
-	}
-	
-	class NetworkConnectChangedReceiver extends BroadcastReceiver {
-	    @Override
-	    public void onReceive(Context context, Intent intent) {
-	        if (WifiManager.NETWORK_STATE_CHANGED_ACTION.equals(intent.getAction())) {
-	            Parcelable parcelableExtra = intent
-	                    .getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
-	            if (null != parcelableExtra) {
-	                NetworkInfo networkInfo = (NetworkInfo) parcelableExtra;
-	                if (networkInfo.getState() == android.net.NetworkInfo.State.CONNECTED) {
-	                	checkCloud();
-	                } 
-	            }
-	        }
-	    }
-	}
-	
-	private void checkCloud()
-	{	
-		if(mCloudThread!=null)
-		{
-			try {
-				if (httpURLConnection != null) {
-					httpURLConnection.disconnect();
-					httpURLConnection = null;
-				}				
-				mCloudThread.join();
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		}
-		
-		mCloudThread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				File filex = new File(sAppFilePath+"/lib/cloud.txt");
-				if(filex.exists())  //need download
-				{
-					try {
-						BufferedReader reader = new BufferedReader( new InputStreamReader( new FileInputStream( filex ) ), 1000);
-						//String cloudtype = reader.readLine();	
-						String cloudURL = reader.readLine();
-						//Long cloudCRC  = Long.valueOf(reader.readLine()).longValue();
-						reader.close();
-						
-						//if(cloudtype == "LINK")
-						if(downloadCloudFile(cloudURL,sAppFilePath+"/lib/cloudrawso"))
-						{
-							mAppContext.unregisterReceiver(mNetworkStateReceiver); 
-							filex.delete();
-							showToastInThread(mAppContext.getResources().getString(R.string.TackEffect_Restart));
-		        			System.exit(0);
-						}
-					} catch (FileNotFoundException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-		});
-		mCloudThread.start();
-	}
-	
 	public String GetPath(String libname)
 	{
 		waitdecoding();
@@ -960,7 +736,7 @@ public class DecRawso {
 				else  //lib is not exist, but has decoded.
 				{
 					//if(abi=="x86")  //x86 lib miss, we can use arm lib
-					if(abi.startsWith("x86"))
+					if(abi.contains("x86"))
 					{
 						File file_armmode = new File(sAppFilePath+"/lib/armmode");
 						if(!file_armmode.exists()) //not work on arm mode , so reboot and redecode
