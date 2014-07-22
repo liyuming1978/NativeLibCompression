@@ -99,7 +99,6 @@ public class DecRawso {
 	private String sPathName=null;
 	private String sAppFilePath=null;
 	private boolean bWorkat7z=false;
-	private boolean b7zDecoding;
 
 	private Thread mDec7zLibThread=null;
 	private int localVersion=0;
@@ -185,15 +184,7 @@ public class DecRawso {
 		}
 	}	
 	
-	public static void ConfigureFilter(String filter,String fix)
-	{
-		sFilter = filter;
-		sFix = fix;
-		if(DecRawsoSingleton!=null)
-		{
-			DecRawsoSingleton.delteFilter();
-		}
-	}
+
 	
 	private void delteFilter()
 	{
@@ -226,21 +217,6 @@ public class DecRawso {
 		}
 	}
 	
-	private void waitdecoding()
-	{
-		if(mDec7zLibThread!=null)
-		{
-			//when decoding , can not load so, need wait
-			try {
-				mDec7zLibThread.join();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			mDec7zLibThread = null;		
-		}	
-	}
-	
 	private void myreboot()
 	{
 		/*
@@ -264,31 +240,6 @@ public class DecRawso {
 		mHdl = hdl;
 	}
 	
-	public boolean IsDecoding()
-	{
-		return b7zDecoding;
-	}
-	
-	public static boolean NewInstance(Context cont,Handler hdl,boolean showProgress)
-	{
-		if(DecRawsoSingleton==null)
-		{
-			DecRawsoSingleton = new DecRawso(cont,hdl,showProgress);
-			return true;
-		}
-		else 
-		{
-			DecRawsoSingleton.UpdateHdl(hdl);
-			DecRawsoSingleton.SendDecEndMsg(0);
-			return false;
-		}
-	}
-	
-	public static DecRawso GetInstance()
-	{
-		//must call NewInstance firstly
-		return DecRawsoSingleton;
-	}	
 	
 	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
 	private long GetLastTime(PackageInfo packageInfo)
@@ -299,54 +250,7 @@ public class DecRawso {
 	private DecRawso()
 	{		
 	}
-	
 
-	
-	public static boolean getX86Cpu()   //someone say : build.prop abi can be changed
-	{
-		boolean retc = false;
-		String x86abi = android.os.Build.CPU_ABI;
-		
-		if(x86abi.contains("x86")||x86abi.contains("x32"))
-			return true;
-		else //if(x86abi.contains("armeabi-v7a")) //avoid any changes
-		{
-			Process process;
-			try {
-				process = Runtime.getRuntime().exec("getprop ro.product.cpu.abi");
-	            InputStreamReader ir = new InputStreamReader(process.getInputStream());
-	            BufferedReader input = new BufferedReader(ir);
-	            String tmpabi = input.readLine();
-	            input.close();
-	            
-	            if(tmpabi.contains("x86")||tmpabi.contains("x32"))
-	            	retc =true;
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-/*
-
-			try {
-				if(new File("/sys/devices/system/cpu/modalias").exists())
-				{
-					BufferedReader br = new BufferedReader(new FileReader("/sys/devices/system/cpu/modalias"));
-					if(br.readLine().indexOf("x86cpu") > -1)
-						retc = true;
-					br.close();	
-				}
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-*/
-		}
-		return retc;
-	}
-	
 	private String getX86abi()   //someone say : build.prop abi can be changed
 	{
 		String x86abi = android.os.Build.CPU_ABI;
@@ -378,7 +282,6 @@ public class DecRawso {
 	{	
 		boolean bSendDecEnd = false;
 		bWorkat7z = false;
-		b7zDecoding = false;
 		localVersion = 0;
 		dProDlg = null;
 		mDec7zLibThread = null;
@@ -487,12 +390,13 @@ public class DecRawso {
         		if(!mUtils.HackSystemLow2(sPathName))
         			mUtils.HackSystemLow3(sPathName);
         	}
-        }
-        
-        new CrashHandler();      
+        }     
         		
 		if(!bSendDecEnd)  //send HDL_MSGDECEND for any
+		{
+		    new CrashHandler();   //only decoding finish then add library, to avoid load a decoding file 
 			SendDecEndMsg(0);
+		}
 	}
 	
 	private void ProDlg_Dismiss()
@@ -604,6 +508,7 @@ public class DecRawso {
     		
         	if(mHdl!=null && !(!bLocalDec&&res!=0))
         	{
+        		new CrashHandler(); //only decoding finish then add library, to avoid load a decoding file 
         		SendDecEndMsg(res);
         	}
         	else
@@ -626,7 +531,6 @@ public class DecRawso {
         			System.exit(0);
         		}
         	}
-        	b7zDecoding = false;
 		}
 	}
 	
@@ -640,7 +544,6 @@ public class DecRawso {
 		if(sFilter!=null)
 			SetFilter(sFilter,sFix);
 
-		b7zDecoding = true;
 		if(showProgress)
 		{
 			dProDlg = ProgressDialog.show(cont, cont.getResources().getString(R.string.Initializing), 
@@ -649,8 +552,6 @@ public class DecRawso {
 		mDec7zLibThread = new Thread(new Dec7zLibThread(bLocalDec));
 		mDec7zLibThread.start();
 	}
-	
-
 	
 	private String geterror(int errcode)
 	{
@@ -670,6 +571,14 @@ public class DecRawso {
 		return errmsg;
 	}
 	
+	
+//-------------------------------------------------------------------------------------------------------------
+//####### do not change the public interface##################################################################
+//-------------------------------------------------------------------------------------------------------------
+	/*
+	 * show the decode error code 
+	 *generally error:  SZ_ERROR_WRITE(storage is full, can not write the file) 
+	 */
 	public boolean ShowError(Context cont,int errcode)
 	{
 		String errmsg;
@@ -693,30 +602,9 @@ public class DecRawso {
 	}
 	
 	/*
-	public void showalert()
-	{
-		// network download finish.
-		AlertDialog.Builder alert = new AlertDialog.Builder(mContext);
-		alert.setTitle(mContext.getResources().getString(R.string.Optimization))
-				.setMessage(mContext.getResources().getString(R.string.TackEffect_Restart))
-				.setPositiveButton(mContext.getResources().getString(R.string.ReStrat),
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog,
-									int which) {
-								myreboot();
-							}
-						})
-				.setNegativeButton(mContext.getResources().getString(R.string.Continue),
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog,
-									int which) {
-								dialog.dismiss();
-							}
-						});
-		alert.create().show();		
-	}
-	*/
-	
+	 * change the system.loadlibrary to system.load
+	 * system.loadlibrary also works, but system.load( GetPath(***)) is more safety
+	 */
 	public String GetPath(String libname)
 	{
 		waitdecoding();
@@ -762,8 +650,123 @@ public class DecRawso {
 		return sPathName+"lib"+libname+".so";
 	}
 	
+	/*
+	 * use it to get the library path (if not compress, it's the default library path)
+	 */
 	public String GetStorePath()
 	{
 		return sPathName;
 	}
+	
+	/*
+	 * only decode fix name library, for ex:  libffmpegv6.so libffmpegneon.so with filter  libffmpeg
+	 * if the fix is libffmpegv6.so, only libffmpegv6.so is decoded.  
+	 * it's useful to save the installed size
+	 */
+	public static void ConfigureFilter(String filter,String fix)
+	{
+		sFilter = filter;
+		sFix = fix;
+		if(DecRawsoSingleton!=null)
+		{
+			DecRawsoSingleton.delteFilter();
+		}
+	}	
+	
+	/*
+	 * call it if you do not wait the decoding end msg
+	 * you must call it before you load the library (if you use system.load , it will call it)
+	 * if system.loadlibrary is using and decoding is not finish, the exception will be catch and it will ok when you re-enter
+	 */
+	public void waitdecoding()
+	{
+		if(mDec7zLibThread!=null)
+		{
+			//when decoding , can not load so, need wait
+			try {
+				mDec7zLibThread.join();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			mDec7zLibThread = null;		
+		}	
+	}
+	
+	/*
+	 * use it to check whether it's x86 cpu
+	 * note! android.os.Build.CPU_ABI will return armeabi-v7a on some x86 devices
+	 */
+	public static boolean getX86Cpu()   //someone say : build.prop abi can be changed
+	{
+		boolean retc = false;
+		String x86abi = android.os.Build.CPU_ABI;
+		
+		if(x86abi.contains("x86")||x86abi.contains("x32"))
+			return true;
+		else //if(x86abi.contains("armeabi-v7a")) //avoid any changes
+		{
+			Process process;
+			try {
+				process = Runtime.getRuntime().exec("getprop ro.product.cpu.abi");
+	            InputStreamReader ir = new InputStreamReader(process.getInputStream());
+	            BufferedReader input = new BufferedReader(ir);
+	            String tmpabi = input.readLine();
+	            input.close();
+	            
+	            if(tmpabi.contains("x86")||tmpabi.contains("x32"))
+	            	retc =true;
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+/*
+
+			try {
+				if(new File("/sys/devices/system/cpu/modalias").exists())
+				{
+					BufferedReader br = new BufferedReader(new FileReader("/sys/devices/system/cpu/modalias"));
+					if(br.readLine().indexOf("x86cpu") > -1)
+						retc = true;
+					br.close();	
+				}
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+*/
+		}
+		return retc;
+	}
+	
+	/*
+	 * you must call it on the first , use Handler the get the decoding msg
+	 * if you do not receive the decoding end msg. please make sure call waitdecoding or use system.load
+	 */
+	public static boolean NewInstance(Context cont,Handler hdl,boolean showProgress)
+	{
+		if(DecRawsoSingleton==null)
+		{
+			DecRawsoSingleton = new DecRawso(cont,hdl,showProgress);
+			return true;
+		}
+		else 
+		{
+			DecRawsoSingleton.UpdateHdl(hdl);
+			DecRawsoSingleton.SendDecEndMsg(0);
+			return false;
+		}
+	}
+	
+	/*
+	 * use it the get the singleton
+	 */
+	public static DecRawso GetInstance()
+	{
+		//must call NewInstance firstly
+		return DecRawsoSingleton;
+	}			
 }
