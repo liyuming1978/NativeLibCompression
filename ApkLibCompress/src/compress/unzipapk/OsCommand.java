@@ -25,15 +25,15 @@ public class OsCommand {
 		String OS=System.getProperties().getProperty("os.name").toLowerCase(); //get the os name
 		if(OS.indexOf("linux")>=0)
 		{
-			mOsCommand = new OsCommand(jarPath,"linux/");	
+			mOsCommand = new OsCommand(jarPath,"../exefile/linux/");	
 		}
 		else if(OS.indexOf("windows")>=0)
 		{
-			mOsCommand = new OsCommand(jarPath,"windows/");	
+			mOsCommand = new OsCommand(jarPath,"../exefile/windows/");	
 		}
 		else if(OS.indexOf("mac")>=0&&OS.indexOf("os")>0&&OS.indexOf("x")<0)
 		{
-			mOsCommand = new OsCommand(jarPath,"mac/");
+			mOsCommand = new OsCommand(jarPath,"../exefile/mac/");
 		}
 		else
 		{
