@@ -40,49 +40,22 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.io.OutputStream;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-import java.util.List;
-
-import dalvik.system.BaseDexClassLoader;
-import dalvik.system.DexClassLoader;
-import dalvik.system.PathClassLoader;
-
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
-import android.os.Parcelable;
-import android.util.Log;
-import android.widget.Toast;
+
 
 
 public class DecRawso {
@@ -546,8 +519,14 @@ public class DecRawso {
 
 		if(showProgress)
 		{
+			try
+			{
 			dProDlg = ProgressDialog.show(cont, cont.getResources().getString(R.string.Initializing), 
 					cont.getResources().getString(R.string.Wait));
+			}catch(Exception e)
+			{
+				
+			}
 		}
 		mDec7zLibThread = new Thread(new Dec7zLibThread(bLocalDec));
 		mDec7zLibThread.start();

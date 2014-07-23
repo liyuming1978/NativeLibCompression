@@ -57,6 +57,7 @@ public class MainActivity extends Activity {
 
 		if(sync_async==0)
 		{
+			//DecRawso.NewInstance(mContext.getApplicationContext(),mDecRawsoHdl,true);  //you can use ApplicationContext
 			DecRawso.NewInstance(mContext,mDecRawsoHdl,true);
 		}
 		else
