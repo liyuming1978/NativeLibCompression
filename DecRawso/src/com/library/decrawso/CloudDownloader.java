@@ -163,7 +163,7 @@ public class CloudDownloader {
 						{
 							mAppContextClound.unregisterReceiver(mNetworkStateReceiver); 
 							filex.delete();
-							mUtils.showToastInThread(mAppContextClound.getResources().getString(R.string.TackEffect_Restart),mAppContextClound);
+							mUtils.showToastInThread(mAppContextClound.getResources().getString(mUtils.getIdByName(mAppContextClound,"string","DecRawso_TackEffect_Restart")),mAppContextClound);
 		        			System.exit(0);
 						}
 					} catch (FileNotFoundException e) {

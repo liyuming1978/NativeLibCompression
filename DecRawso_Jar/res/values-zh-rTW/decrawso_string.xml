@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="DecRawso_ReStrat">重啟</string>
+    <string name="DecRawso_Continue">繼續</string>
+    <string name="DecRawso_OK">確定</string>
+    <string name="DecRawso_Optimization">優化</string>
+    <string name="DecRawso_TackEffect_Restart">優化完成，重啟軟件生效</string>
+    <string name="DecRawso_Insufficient_Memory">內存不足，請重啟設備</string>
+    <string name="DecRawso_Insufficient_Storage">存儲空間不足，請刪除其它應用</string>
+    <string name="DecRawso_Unknown_Error">未知錯誤</string>
+
+    <string name="DecRawso_Initial_Error">初始化錯誤</string>
+    <string name="DecRawso_Quit">退出</string>
+    <string name="DecRawso_Initializing">正在初始化</string>
+    <string name="DecRawso_Wait">請等待</string>
+        
+</resources>

@@ -124,7 +124,7 @@ public class DecRawso {
 				//如果用户没有处理则让系统默认的异常处理器来处理
 				mDefaultHandler.uncaughtException(thread, ex);
 			} else {
-				mUtils.showToastInThread(mAppContext.getResources().getString(R.string.ReStrat),mAppContext);
+				mUtils.showToastInThread(mAppContext.getResources().getString(mUtils.getIdByName(mAppContext,"string","DecRawso_ReStrat")),mAppContext);
 				//退出程序
 				android.os.Process.killProcess(android.os.Process.myPid());
 				System.exit(1);
@@ -521,8 +521,8 @@ public class DecRawso {
 		{
 			try
 			{
-			dProDlg = ProgressDialog.show(cont, cont.getResources().getString(R.string.Initializing), 
-					cont.getResources().getString(R.string.Wait));
+			dProDlg = ProgressDialog.show(cont, cont.getResources().getString(mUtils.getIdByName(mAppContext,"string","DecRawso_Initializing")), 
+					cont.getResources().getString(mUtils.getIdByName(mAppContext,"string","DecRawso_Wait")));
 			}catch(Exception e)
 			{
 				
@@ -538,13 +538,13 @@ public class DecRawso {
 		switch(errcode)
 		{
 		default:
-			errmsg = mAppContext.getResources().getString(R.string.Unknown_Error);
+			errmsg = mAppContext.getResources().getString(mUtils.getIdByName(mAppContext,"string","DecRawso_Unknown_Error"));
 			break;
 		case SZ_ERROR_MEM:
-			errmsg = mAppContext.getResources().getString(R.string.Insufficient_Memory);
+			errmsg = mAppContext.getResources().getString(mUtils.getIdByName(mAppContext,"string","DecRawso_Insufficient_Memory"));
 			break;
 		case SZ_ERROR_WRITE:
-			errmsg = mAppContext.getResources().getString(R.string.Insufficient_Storage);
+			errmsg = mAppContext.getResources().getString(mUtils.getIdByName(mAppContext,"string","DecRawso_Insufficient_Storage"));
 			break;			
 		}		
 		return errmsg;
@@ -567,9 +567,9 @@ public class DecRawso {
 		errmsg = geterror(errcode);
 		// decode rawso error
 		AlertDialog.Builder alert = new AlertDialog.Builder(cont);
-		alert.setTitle(cont.getResources().getString(R.string.Initial_Error))
+		alert.setTitle(cont.getResources().getString(mUtils.getIdByName(mAppContext,"string","DecRawso_Initial_Error")))
 				.setMessage(errmsg)
-				.setPositiveButton(cont.getResources().getString(R.string.Quit),
+				.setPositiveButton(cont.getResources().getString(mUtils.getIdByName(mAppContext,"string","DecRawso_Quit")),
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog,
 									int which) {

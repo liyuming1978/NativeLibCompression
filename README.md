@@ -27,5 +27,7 @@ HOW TO COMPRESS THE APK: -- Use compress tool : ApkLibCompress
 
 5.you can put arm lib on x86 folder to avoid library miss on x86 devices
 
+6.you can copy all of "DecRawso_Jar" into your project if you use "ant" to package your project
+
 
 

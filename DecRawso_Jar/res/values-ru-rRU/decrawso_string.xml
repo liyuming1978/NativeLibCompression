@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="DecRawso_ReStrat">перезапуск</string>
+    <string name="DecRawso_Continue">продолжать</string>
+    <string name="DecRawso_OK">хорошо</string>
+    <string name="DecRawso_Optimization">оптимизация</string>
+    <string name="DecRawso_TackEffect_Restart">Оптимизация полной, вступают в силу после перезагрузки</string>
+    <string name="DecRawso_Insufficient_Memory">Недостаточно памяти, перезагрузить устройство</string>
+    <string name="DecRawso_Insufficient_Storage">Недостаточно места для хранения, освободить место</string>
+    <string name="DecRawso_Unknown_Error">Неизвестная ошибка</string>
+
+    <string name="DecRawso_Initial_Error">начальная ошибка</string>
+    <string name="DecRawso_Quit">выход</string>
+    <string name="DecRawso_Initializing">Инициализация</string>
+    <string name="DecRawso_Wait">Ждите</string>
+        
+</resources>

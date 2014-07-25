@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="DecRawso_ReStrat">재부팅</string>
+    <string name="DecRawso_Continue">계속</string>
+    <string name="DecRawso_OK">OK</string>
+    <string name="DecRawso_Optimization">최적화</string>
+    <string name="DecRawso_TackEffect_Restart">최적화 완료, 다시 시작하면 적용</string>
+    <string name="DecRawso_Insufficient_Memory">메모리가 부족하여 장치를 다시 부팅</string>
+    <string name="DecRawso_Insufficient_Storage">저장 공간이 부족은 공간을 확보</string>
+    <string name="DecRawso_Unknown_Error">알 수없는 오류</string>
+
+    <string name="DecRawso_Initial_Error">초기 오류</string>
+    <string name="DecRawso_Quit">종료</string>
+    <string name="DecRawso_Initializing">초기화</string>
+    <string name="DecRawso_Wait">기다려주십시오</string>
+        
+</resources>

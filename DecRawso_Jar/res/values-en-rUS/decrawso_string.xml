@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="DecRawso_ReStrat">Restart</string>
+    <string name="DecRawso_Continue">Continue</string>
+    <string name="DecRawso_OK">OK</string>
+    <string name="DecRawso_Optimization">Optimization</string>
+    <string name="DecRawso_TackEffect_Restart">Optimization complete,take effect after restart</string>
+    <string name="DecRawso_Insufficient_Memory">Insufficient memory, reboot your device</string>
+    <string name="DecRawso_Insufficient_Storage">Insufficient storage space, free up some space</string>
+    <string name="DecRawso_Unknown_Error">Unknown Error</string>
+    
+    <string name="DecRawso_Initial_Error">Initial Error</string>
+    <string name="DecRawso_Quit">Quit</string>
+    <string name="DecRawso_Initializing">Initializing</string>
+    <string name="DecRawso_Wait">Please Wait</string>
+    
+</resources>

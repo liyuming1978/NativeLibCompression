@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="DecRawso_ReStrat">重启</string>
+    <string name="DecRawso_Continue">続ける</string>
+    <string name="DecRawso_OK">确定</string>
+    <string name="DecRawso_Optimization">最適化</string>
+    <string name="DecRawso_TackEffect_Restart">最適化が完了すると、再起動後に有効になります</string>
+    <string name="DecRawso_Insufficient_Memory">メモリが不足し、お使いのデバイスを再起動</string>
+    <string name="DecRawso_Insufficient_Storage">不十分な収納スペースは、いくつかの領域を解放</string>
+    <string name="DecRawso_Unknown_Error">不明なエラー</string>
+
+    <string name="DecRawso_Initial_Error">初期誤差</string>
+    <string name="DecRawso_Quit">やめる</string>
+    <string name="DecRawso_Initializing">初期化</string>
+    <string name="DecRawso_Wait">しばらくお待ちください</string>
+    
+</resources>
