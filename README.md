@@ -29,5 +29,17 @@ HOW TO COMPRESS THE APK: -- Use compress tool : ApkLibCompress
 
 6.you can copy all of "DecRawso_Jar" into your project if you use "ant" to package your project
 
+7.new flag: 
+  -o outputfilename      define the finaly output file name
+  -slience               no popup window, that is suitable for ant package
+  -nosign                do not sign the apk, that is suitable for ant package , due to the ant will sign apk
+  -nox86check			 do not check x86 library missing and mix use of arm issue (x86 directly call arm library is forbidden default)
+  
+8.how to know the result
+  now will create 3 files in the ApkLibCompress.jar folder
+  :Done.flag  	you can check whether the file is exist , if exist , then compression is ok
+  :error.log   	if generation fail, the log will has the reason
+  :porting.log 	it will show the x86/arm mix using or x86 lib missing issue
+
 
 

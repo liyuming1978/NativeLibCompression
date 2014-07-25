@@ -73,19 +73,57 @@ public class ComPressApk {
 		}			
 	}
 	
+	private static void outputstr(String msg,boolean slience,String jarpath)
+	{
+		System.out.print(msg);
+		if(!slience)
+			JOptionPane.showMessageDialog(null,msg);
+		else
+		{
+			if(msg.equals("Done"))
+			{
+				try {
+					new File(jarpath+"Done.flag").createNewFile();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			else
+			{
+				try {
+					BufferedWriter porterr = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(jarpath+"error.log",true)));
+					porterr.write(msg);
+					porterr.newLine();
+					porterr.close();
+					
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
 	public static void main(String[] args) {
 		int i;
 		String JarPath=null;
 		boolean bOnly = false;
+		boolean bSlience = false;
+		boolean bSignApk = true;
+		boolean bX86Check = true;
+		String sOutputName = null;
 		
 		if(args.length<=1 || args[0].compareToIgnoreCase("-h")==0)
 		{
-			System.out.print("-a [ApkFullname]\n-k [key storepass keypass alias] --if not use it,use testkey\n-x86 [http link]\n" +
+			outputstr("-a [ApkFullname]\n-k [key storepass keypass alias [name]] --if not use it,use testkey\n-x86 [http link]\n" +
 					"-arm64 [http link]\n-x86_64 [http link]\n-mips64 [http link]\n note: http link do not include the filename\n" +
-					"ex: ComPressApk.jar -a C:/my/test.apk -k c:/key *** ### alias [name] -x86 http://www.test.com");
-			JOptionPane.showMessageDialog(null,"-a [ApkFullname]\n-k [key storepass keypass alias] --if not use it,use testkey\n-x86 [http link]\n" +
-					"-arm64 [http link]\n-x86_64 [http link]\n-mips64 [http link]\n note: http link do not include the filename\n" +
-					"ex: ComPressApk.jar -a C:/my/test.apk -k c:/key *** ### alias [name] -x86 http://www.test.com");
+					"[-o outputfilename -slience -nosign -nox86check]" +
+					"ex: ComPressApk.jar -a C:/my/test.apk -k c:/key *** ### alias [name] -x86 http://www.test.com"
+					,bSlience,JarPath);
 			return;
 		}
 		KeyName = new String[5];
@@ -93,17 +131,58 @@ public class ComPressApk {
 		
 		for(i=0;i<args.length;i++)
 		{
+			if(args[i].compareToIgnoreCase("-slience")==0)
+			{
+				bSlience = true;
+			}				
+		}
+		
+		//--------------------------------------------------------------------------------------------------------------        			
+        try {
+        	JarPath = URLDecoder.decode(ComPressApk.class.getProtectionDomain()
+			        .getCodeSource().getLocation().getFile(), "UTF-8");
+        	File jarfile = new File(JarPath);
+        	if(!jarfile.isDirectory())
+        		JarPath = jarfile.getParent();
+        	if(!(JarPath.endsWith("/") ||JarPath.endsWith("\\")))
+        		JarPath+="/";
+        	//outputstr(JarPath);
+        	new File(JarPath+"Done.flag").delete();
+        	new File(JarPath+"error.log").delete();
+        	
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			//outputstr("err jar");
+			e1.printStackTrace();
+		}		
+		//--------------------------------------------------------------------------------------------------------------        			
+       
+		for(i=0;i<args.length;i++)
+		{
 			if(args[i].compareToIgnoreCase("-a")==0)
 			{
 				if(++i<args.length)
 					ApkFullname = args[i];
 			}	
-			else if(args[i].compareToIgnoreCase("-s")==0)
+			else if(args[i].compareToIgnoreCase("-signonly")==0)
 			{
 				if(++i<args.length)
 					ApkFullname = args[i];
 				bOnly = true;
 			}	
+			else if(args[i].compareToIgnoreCase("-nosign")==0)
+			{
+				bSignApk = false;
+			}	
+			else if(args[i].compareToIgnoreCase("-nox86check")==0)
+			{
+				bX86Check = false;
+			}	
+			else if(args[i].compareToIgnoreCase("-o")==0)
+			{
+				if(++i<args.length)
+					sOutputName = args[i];
+			}	 
 			else if(args[i].compareToIgnoreCase("-k")==0)
 			{
 				int c=-1;
@@ -112,13 +191,13 @@ public class ComPressApk {
 					KeyName[c] = args[i];
 					if(KeyName[c].startsWith("-"))
 					{
-						JOptionPane.showMessageDialog(null,"key must have at least 4 paramater: key storepass keypass alias [name]");
+						outputstr("key must have at least 4 paramater: key storepass keypass alias [name]",bSlience,JarPath);
 						return;
 					}
 				}	
 				if(c<3)
 				{
-					JOptionPane.showMessageDialog(null,"key must have at least 4 paramater: key storepass keypass alias [name]");
+					outputstr("key must have at least 4 paramater: key storepass keypass alias [name]",bSlience,JarPath);
 					return;				
 				}
 				
@@ -136,7 +215,7 @@ public class ComPressApk {
 						x86Link+="/";
 					if(!x86Link.startsWith("http"))
 					{
-						JOptionPane.showMessageDialog(null,x86Link+" must start with http");
+						outputstr(x86Link+" must start with http",bSlience,JarPath);
 						return;
 					}
 				}
@@ -150,7 +229,7 @@ public class ComPressApk {
 						x64Link+="/";
 					if(!x64Link.startsWith("http"))
 					{
-						JOptionPane.showMessageDialog(null,x64Link+" must start with http");
+						outputstr(x64Link+" must start with http",bSlience,JarPath);
 						return;
 					}
 				}
@@ -164,7 +243,7 @@ public class ComPressApk {
 						mips64Link+="/";	
 					if(!mips64Link.startsWith("http"))
 					{
-						JOptionPane.showMessageDialog(null,mips64Link+" must start with http");
+						outputstr(mips64Link+" must start with http",bSlience,JarPath);
 						return;
 					}					
 				}
@@ -178,7 +257,7 @@ public class ComPressApk {
 						arm64Link+="/";	
 					if(!arm64Link.startsWith("http"))
 					{
-						JOptionPane.showMessageDialog(null,arm64Link+" must start with http");
+						outputstr(arm64Link+" must start with http",bSlience,JarPath);
 						return;
 					}						
 				}
@@ -187,7 +266,7 @@ public class ComPressApk {
 		
 		if(ApkFullname==null || !ApkFullname.contains(".apk"))
 		{
-			JOptionPane.showMessageDialog(null,"Invalid pathname");
+			outputstr("Invalid pathname",bSlience,JarPath);
 			return;
 		}
 		if(KeyName[0]==null)
@@ -199,33 +278,19 @@ public class ComPressApk {
 			File testKey = new File(KeyName[0]);
 			if(!testKey.exists())
 			{
-				JOptionPane.showMessageDialog(null,"No testKey in "+KeyName[0]+"\nUse -k in command line or install eclipse");
+				outputstr("No testKey in "+KeyName[0]+"\nUse -k in command line or install eclipse",bSlience,JarPath);
 				return;
 			}
 		}
 		
-//--------------------------------------------------------------------------------------------------------------        			
-        try {
-        	JarPath = URLDecoder.decode(ComPressApk.class.getProtectionDomain()
-			        .getCodeSource().getLocation().getFile(), "UTF-8");
-        	File jarfile = new File(JarPath);
-        	if(!jarfile.isDirectory())
-        		JarPath = jarfile.getParent();
-        	if(!(JarPath.endsWith("/") ||JarPath.endsWith("\\")))
-        		JarPath+="/";
-        	//JOptionPane.showMessageDialog(null,JarPath);
-        	OsCommand.newInstance(JarPath);
-        	if(OsCommand.getInstance()==null)
-        	{
-        		JOptionPane.showMessageDialog(null,"Error: unsupport system, only for windows,linux and mac");
-        		return;
-        	}
-		} catch (UnsupportedEncodingException e1) {
-			// TODO Auto-generated catch block
-			//JOptionPane.showMessageDialog(null,"err jar");
-			e1.printStackTrace();
-		}		
-	
+//--------------------------------------------------------------------------------------------------------------        			      
+    	OsCommand.newInstance(JarPath);
+    	if(OsCommand.getInstance()==null)
+    	{
+    		outputstr("Error: unsupport system, only for windows,linux and mac",bSlience,JarPath);
+    		return;
+    	}
+			
 //--------------------------------------------------------------------------------------------------------------        
 		int last=ApkFullname.lastIndexOf("/");
 		int last1=ApkFullname.lastIndexOf("\\");
@@ -240,9 +305,9 @@ public class ComPressApk {
 			if(!OsCommand.getInstance().ApkJarSigner(ApkFullname, KeyName))
 				return;
 			//zipalign
-			if(!OsCommand.getInstance().ApkZipAlign(ApkFullname))
+			if(OsCommand.getInstance().ApkZipAlign(ApkFullname)==null)
 				return;		
-			JOptionPane.showMessageDialog(null,"Done");
+			outputstr("Done",bSlience,JarPath);
 			return;
 		}
 		
@@ -256,7 +321,7 @@ public class ComPressApk {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(null,"Error: apk unzip error");
+			outputstr("Error: apk unzip error",bSlience,JarPath);
 			return;
 		}
 		
@@ -275,7 +340,7 @@ public class ComPressApk {
 		
 		if((rawso = new File(ApkZiptmpname+"/assets/rawso.")).exists())
 		{
-			JOptionPane.showMessageDialog(null,"Error: rawso is exist in assets");
+			outputstr("Error: rawso is exist in assets",bSlience,JarPath);
 			deleteDir(new File(ApkZiptmpname));
 			return;
 		}
@@ -318,7 +383,7 @@ public class ComPressApk {
 		}
 		
 		//check x86 library
-		if(libx86.exists())
+		if(bX86Check && libx86.exists())
 		{
 			boolean detecterror=false;
 			ArrayList<String> amrlibarrary= new ArrayList<String>();
@@ -380,7 +445,7 @@ public class ComPressApk {
 			if(detecterror)
 			{
 				deleteDir(new File(ApkZiptmpname));
-				JOptionPane.showMessageDialog(null,"x86 porting error, see porting.log");
+				outputstr("x86 porting error, see porting.log",bSlience,JarPath);
 				return;
 			}
 		}
@@ -443,15 +508,22 @@ public class ComPressApk {
 			}
 		}
 		
-		//sign the apk
-		if(!OsCommand.getInstance().ApkJarSigner(ApkCompressname, KeyName))
-			return;
-		//zipalign
-		if(!OsCommand.getInstance().ApkZipAlign(ApkCompressname))
-			return;		
+		if(bSignApk)
+		{
+			//sign the apk
+			if(!OsCommand.getInstance().ApkJarSigner(ApkCompressname, KeyName))
+				return;
+			//zipalign
+			if((ApkCompressname=OsCommand.getInstance().ApkZipAlign(ApkCompressname))==null)
+				return;		
+		}
 		//--delete tmp
 		deleteDir(new File(ApkZiptmpname));
-		JOptionPane.showMessageDialog(null,"Done");
+		if(sOutputName!=null)
+		{
+			new File(ApkCompressname).renameTo(new File(sOutputName));
+		}
+		outputstr("Done",bSlience,JarPath);
 	}
 
 	private static String getSuffixName(final String name) {

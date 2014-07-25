@@ -123,11 +123,12 @@ public class OsCommand {
 		return true;
 	}
 
-	public boolean ApkZipAlign(String apkname) {
+	public String ApkZipAlign(String apkname) {
 		// TODO Auto-generated method stub
+		String outname = null;
         Runtime rn=Runtime.getRuntime();
         try{
-        	String outname = apkname.substring(0, apkname.lastIndexOf("."))+"Align.apk";
+        	outname = apkname.substring(0, apkname.lastIndexOf("."))+"Align.apk";
         	System.out.println("ZipAlign "+outname);      
         	File zipalignf = new File(outname);
         	if(zipalignf.exists())
@@ -143,7 +144,7 @@ public class OsCommand {
         	if(!new File(outname).exists())
         	{
             	JOptionPane.showMessageDialog(null,"Error: ZipAlign "+apkname);
-            	return false; 
+            	return null; 
         	}
         	else
         	{
@@ -151,9 +152,9 @@ public class OsCommand {
         	}
         }catch(Exception e){
         	JOptionPane.showMessageDialog(null,"Error: ZipAlign "+apkname);
-        	return false; 
+        	return null; 
         }     		
-		return true;
+		return outname;
 	}		
 	
 	public ArrayList<String> GetShareLibrary(String libname)
