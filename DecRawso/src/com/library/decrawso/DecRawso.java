@@ -147,8 +147,10 @@ public class DecRawso {
 				}
 				else
 				{
-					waitdecoding();
-					return false;
+					if(waitdecoding())
+						return true;
+					else
+						return false;
 				}
 				return true;
 			}
@@ -354,20 +356,11 @@ public class DecRawso {
     		}
 		}
 
-        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-        	mUtils.HackSystemICS(sPathName);	
-        else
-        {
-        	if(!mUtils.HackSystemLow1(sPathName))
-        	{
-        		if(!mUtils.HackSystemLow2(sPathName))
-        			mUtils.HackSystemLow3(sPathName);
-        	}
-        }     
-        		
+		new CrashHandler();  
+		                		
 		if(!bSendDecEnd)  //send HDL_MSGDECEND for any
 		{
-		    new CrashHandler();   //only decoding finish then add library, to avoid load a decoding file 
+			mUtils.HackLibPath(sPathName);   //only decoding finish then add library path, to avoid load a decoding file 
 			SendDecEndMsg(0);
 		}
 	}
@@ -479,9 +472,10 @@ public class DecRawso {
     			fileraw22 = null;
     		}
     		
+    		mUtils.HackLibPath(sPathName); //only decoding finish then add library path, to avoid load a decoding file 
+    		
         	if(mHdl!=null && !(!bLocalDec&&res!=0))
         	{
-        		new CrashHandler(); //only decoding finish then add library, to avoid load a decoding file 
         		SendDecEndMsg(res);
         	}
         	else
@@ -657,7 +651,7 @@ public class DecRawso {
 	 * you must call it before you load the library (if you use system.load , it will call it)
 	 * if system.loadlibrary is using and decoding is not finish, the exception will be catch and it will ok when you re-enter
 	 */
-	public void waitdecoding()
+	public boolean waitdecoding()
 	{
 		if(mDec7zLibThread!=null)
 		{
@@ -669,7 +663,10 @@ public class DecRawso {
 				e.printStackTrace();
 			}
 			mDec7zLibThread = null;		
+			return true;
 		}	
+		else
+			return false;
 	}
 	
 	/*
@@ -727,9 +724,10 @@ public class DecRawso {
 	 */
 	public static boolean NewInstance(Context cont,Handler hdl,boolean showProgress)
 	{
-		if(DecRawsoSingleton==null)
+		if(DecRawsoSingleton==null || DecRawsoSingleton.mCloudDlr.bReInit)
 		{
 			DecRawsoSingleton = new DecRawso(cont,hdl,showProgress);
+			DecRawsoSingleton.mCloudDlr.bReInit = false;
 			return true;
 		}
 		else 

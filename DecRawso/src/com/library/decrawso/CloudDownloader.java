@@ -28,6 +28,7 @@ public class CloudDownloader {
 	private String sAppFilePathClound;
 	private Context mAppContextClound;
 	private UtilsFunc mUtils = new UtilsFunc();
+	public boolean bReInit = false;
 	
 	public void RegisterCloudDownloader(Context mc, String spath)
 	{
@@ -164,7 +165,7 @@ public class CloudDownloader {
 							mAppContextClound.unregisterReceiver(mNetworkStateReceiver); 
 							filex.delete();
 							mUtils.showToastInThread(mAppContextClound.getResources().getString(mUtils.getIdByName(mAppContextClound,"string","DecRawso_TackEffect_Restart")),mAppContextClound);
-		        			System.exit(0);
+							bReInit = true;
 						}
 					} catch (FileNotFoundException e) {
 						// TODO Auto-generated catch block

@@ -9,9 +9,9 @@ public class JNILib {
     
     public void loadlib()
     {
-    	System.load(DecRawso.GetInstance().GetPath("hellotwo"));
     	//System.load(DecRawso.GetInstance().GetPath("helloone"));
     	System.loadLibrary("helloone");  //now, you can just use the orignal code
+    	System.load(DecRawso.GetInstance().GetPath("hellotwo"));
     	System.load(DecRawso.GetInstance().GetPath("hellothree"));
     }
 }

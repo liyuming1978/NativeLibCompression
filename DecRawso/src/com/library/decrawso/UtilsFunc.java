@@ -9,6 +9,7 @@ import dalvik.system.DexClassLoader;
 import dalvik.system.PathClassLoader;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Build;
 import android.os.Looper;
 import android.widget.Toast;
 
@@ -52,8 +53,22 @@ public class UtilsFunc {
         return true;
 	}
 	
+	public void HackLibPath(String pname)
+	{
+		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+        	HackSystemICS(pname);	
+        else
+        {
+        	if(!HackSystemLow1(pname))
+        	{
+        		if(!HackSystemLow2(pname))
+        			HackSystemLow3(pname);
+        	}
+        } 		
+	}
+	
 	@SuppressLint("NewApi")
-	public void HackSystemICS(String pname)
+	private void HackSystemICS(String pname)
 	{
 		try{
 			Field fieldSysPath = BaseDexClassLoader.class.getDeclaredField("pathList");  
@@ -74,7 +89,7 @@ public class UtilsFunc {
 		}				
 	}
 	
-	public boolean HackSystemLow3(String pname) //even older
+	private boolean HackSystemLow3(String pname) //even older
 	{
 		boolean bret = true;
 		Field fieldSysPath;
@@ -96,7 +111,7 @@ public class UtilsFunc {
 		return bret;
 	}	
 	
-	public boolean HackSystemLow2(String pname)  //for 2.2
+	private boolean HackSystemLow2(String pname)  //for 2.2
 	{
 		boolean bret = true;
 		try{
@@ -116,7 +131,7 @@ public class UtilsFunc {
 		return bret;
 	}	
 	
-	public boolean HackSystemLow1(String pname)  //for 2.3
+	private boolean HackSystemLow1(String pname)  //for 2.3
 	{
 		boolean bret = true;
 		try{
