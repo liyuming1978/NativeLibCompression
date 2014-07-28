@@ -411,6 +411,8 @@ public class ComPressApk {
 				files = libx86.listFiles();
 				for(File file:files)
 				{
+					while(amrlibarrary.remove(file.getName()));  //remove all file that exist x86
+						
 					if(OsCommand.getInstance().IsArmShareLibrary(file.getAbsolutePath()))
 						amrx86arrary.add(file.getName());
 				}
