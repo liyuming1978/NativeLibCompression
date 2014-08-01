@@ -11,7 +11,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
@@ -32,6 +35,54 @@ public class ComPressApk {
 	private static String ApkFilename;
 	private static String ApkCompressname;
 	
+	private static String getMD5(String filename) 
+	{
+		String MD5Value=null;
+		String hashType = "MD5";
+		FileInputStream fStream = null;
+		try {
+			MessageDigest md5 = MessageDigest.getInstance(hashType);
+			fStream = new FileInputStream(filename);
+			FileChannel fChannel = fStream.getChannel();
+			ByteBuffer buffer = ByteBuffer.allocate(8 * 1024);
+			//long s = System.currentTimeMillis();
+			for (int count = fChannel.read(buffer); count != -1; count = fChannel
+					.read(buffer)) {
+				buffer.flip();
+				md5.update(buffer);
+				if (!buffer.hasRemaining()) {
+					// System.out.println("count:"+count);
+					buffer.clear();
+				}
+			}
+			
+			//s = System.currentTimeMillis() - s;
+			byte[] ss = md5.digest();
+			MD5Value = "";
+			for(int i=0;i<ss.length;i++)
+			{
+				MD5Value+=String.format("%02x",ss[i]);
+			}
+
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				if (fStream != null)
+					fStream.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return MD5Value;
+	}
 	
 	private static File makeCloud(String Link,String abi,String ApkZiptmpname,File cloudso,File libfolder) 
 	{
@@ -45,8 +96,10 @@ public class ComPressApk {
 		libfolder.renameTo(tmp);
 		libfolder.mkdirs();
 		try {
-			OutputStreamWriter fCloudOut = new OutputStreamWriter(new FileOutputStream(ApkZiptmpname+"/lib/"+abi+"/cloud.txt"));
+			BufferedWriter fCloudOut = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(ApkZiptmpname+"/lib/"+abi+"/cloud.txt")));
 			fCloudOut.write(Link+"cloudrawso_"+abi);
+			fCloudOut.newLine();
+			fCloudOut.write(getMD5(cloudso.getAbsolutePath()+"/cloudrawso_"+abi));
 			fCloudOut.close();
 			//TODO add http auto upload
 		} catch (IOException e) {
@@ -284,7 +337,7 @@ public class ComPressApk {
 		}
 		
 //--------------------------------------------------------------------------------------------------------------        			      
-    	OsCommand.newInstance(JarPath);
+    	OsCommand.newInstance(JarPath,bSlience);
     	if(OsCommand.getInstance()==null)
     	{
     		outputstr("Error: unsupport system, only for windows,linux and mac",bSlience,JarPath);
@@ -334,7 +387,7 @@ public class ComPressApk {
 		File libarm;
 		File libarmv7,armv7tmp = null;
 		File libarm64,arm64tmp = null;
-		File libmips,mipstmp = null;
+		File libmips = null;
 		File libmips64,mips64tmp = null;
 		//OutputStreamWriter fCloudOut;
 		
@@ -450,6 +503,8 @@ public class ComPressApk {
 				outputstr("x86 porting error, see porting.log",bSlience,JarPath);
 				return;
 			}
+			else
+				new File(JarPath+"/porting.log").delete();
 		}
 		
 		//LZMA compress

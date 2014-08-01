@@ -1,8 +1,13 @@
 package compress.unzipapk;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
@@ -11,6 +16,7 @@ public class OsCommand {
 	private static OsCommand mOsCommand=null;
 	private String JarPath;
 	private String JarPathParent;
+	private static boolean mbSlience=false;
 	
 	private OsCommand(String jarPath,String sys)
 	{		
@@ -18,14 +24,21 @@ public class OsCommand {
 		JarPath = jarPath+sys;
 	}
 	
-	protected static void newInstance(String jarPath) {
+	protected static void newInstance(String jarPath,boolean bSlience) {
 		if(mOsCommand!=null)
 			return;
 		
+		mbSlience = bSlience;
 		String OS=System.getProperties().getProperty("os.name").toLowerCase(); //get the os name
 		if(OS.indexOf("linux")>=0)
 		{
 			mOsCommand = new OsCommand(jarPath,"../exefile/linux/");	
+			try {
+				Runtime.getRuntime().exec("chmod +x "+jarPath+"../exefile/linux/*");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		else if(OS.indexOf("windows")>=0)
 		{
@@ -34,12 +47,41 @@ public class OsCommand {
 		else if(OS.indexOf("mac")>=0&&OS.indexOf("os")>0&&OS.indexOf("x")<0)
 		{
 			mOsCommand = new OsCommand(jarPath,"../exefile/mac/");
+			try {
+				Runtime.getRuntime().exec("chmod +x "+jarPath+"../exefile/mac/*");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
 		}
 		else
 		{
 			mOsCommand = null;
 		}		
 	}
+	
+	private void outputstr(String msg)
+	{
+		System.out.print(msg);
+		if(!mbSlience)
+			JOptionPane.showMessageDialog(null,msg);
+		else
+		{
+			try {
+				BufferedWriter porterr = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(JarPathParent+"oserror.log",true)));
+				porterr.write(msg);
+				porterr.newLine();
+				porterr.close();
+				
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}	
 	
 	protected static OsCommand getInstance() {
 		return mOsCommand;
@@ -88,7 +130,7 @@ public class OsCommand {
         	wt.setOver(true); 
         	wt.join();
         }catch(Exception e){
-        	JOptionPane.showMessageDialog(null,"Error: compress "+cmd);
+        	outputstr("Error: compress "+cmd);
         	return false; 
         }     		
 		return true;
@@ -102,7 +144,7 @@ public class OsCommand {
         	Process process = rn.exec(JarPath+"aapt "+cmd,null,new File(workpath));
         	process.waitFor();
         }catch(Exception e){
-        	JOptionPane.showMessageDialog(null,"Error: aapt "+cmd);
+        	outputstr("Error: aapt "+cmd);
         	return false; 
         }     			
 		return true;
@@ -117,7 +159,7 @@ public class OsCommand {
         			keyname[0]+" -storepass " +keyname[1]+" -keypass "+keyname[2]+" -sigfile "+keyname[4]+" "+apkname+" "+keyname[3]);
         	process.waitFor();
         }catch(Exception e){
-        	JOptionPane.showMessageDialog(null,"Error: JarSigner "+apkname);
+        	outputstr("Error: JarSigner "+apkname);
         	return false; 
         }     			
 		return true;
@@ -143,7 +185,7 @@ public class OsCommand {
         	
         	if(!new File(outname).exists())
         	{
-            	JOptionPane.showMessageDialog(null,"Error: ZipAlign "+apkname);
+            	outputstr("Error: ZipAlign "+apkname);
             	return null; 
         	}
         	else
@@ -151,7 +193,7 @@ public class OsCommand {
         		new File(apkname).delete();
         	}
         }catch(Exception e){
-        	JOptionPane.showMessageDialog(null,"Error: ZipAlign "+apkname);
+        	outputstr("Error: ZipAlign "+apkname);
         	return null; 
         }     		
 		return outname;
@@ -214,7 +256,7 @@ public class OsCommand {
             	}
         	}
         }catch(Exception e){
-        	JOptionPane.showMessageDialog(null,"Error: GetShareLibrary "+libname);
+        	outputstr("Error: GetShareLibrary "+libname);
         	return libarrary; 
         }     					
 		return libarrary;
@@ -253,7 +295,7 @@ public class OsCommand {
         	}
 
         }catch(Exception e){
-        	JOptionPane.showMessageDialog(null,"Error: IsArmShareLibrary "+libname);
+        	outputstr("Error: IsArmShareLibrary "+libname);
         	return false; 
         }     					
 		return IsArmLib;
