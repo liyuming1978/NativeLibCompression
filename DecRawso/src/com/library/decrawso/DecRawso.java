@@ -44,7 +44,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.List;
+
 import android.annotation.TargetApi;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -126,7 +129,7 @@ public class DecRawso {
 			} else {
 				mUtils.showToastInThread(mAppContext.getResources().getString(mUtils.getIdByName(mAppContext,"string","DecRawso_ReStrat")),mAppContext);
 				//退出程序
-				android.os.Process.killProcess(android.os.Process.myPid());
+				//android.os.Process.killProcess(android.os.Process.myPid());
 				System.exit(1);
 			}
 		}
@@ -159,8 +162,6 @@ public class DecRawso {
 		}
 	}	
 	
-
-	
 	private void delteFilter()
 	{
 		waitdecoding();
@@ -168,7 +169,7 @@ public class DecRawso {
 		if(bWorkat7z)
 		{
 			boolean findfix = false;
-			File filedir = new File(sAppFilePath+"/lib/");
+			File filedir = new File(sAppFilePath+"/DecRawsoLib/");
 			File[] allfiles = filedir.listFiles();
 			for (File tmpfile : allfiles)
 			{
@@ -301,18 +302,22 @@ public class DecRawso {
 	            e.printStackTrace();  
 	        } 
 	        
-	        File filex = new File(sAppFilePath+"/lib/decdone_"+localVersion+"_"+lasttime);
-	        File filedir = new File(sAppFilePath+"/lib/");
+	        File filex = new File(sAppFilePath+"/DecRawsoLib/decdone_"+localVersion+"_"+lasttime);
+	        File filedir = new File(sAppFilePath+"/DecRawsoLib/");
     		if(!filex.exists())
     		{
-        		if(!filedir.exists()){  
+    			boolean bClound = true;
+         		if(!filedir.exists()){  
         			filedir.mkdir();//empty so create dir
          		} 
         		else  //delete all sub files
-        		{
-        			File forcearm = new File(sAppFilePath+"/lib/_FORCEARM_.tmp");
+        		{	
+        			File forcearm = new File(sAppFilePath+"/DecRawsoLib/_FORCEARM_.tmp");
         			if(forcearm.exists() && abi.contains("x86"))  //x86 lib miss, we can use arm lib
+        			{
         				abi="armeabi-v7a";
+        				bClound = false;
+        			}
         				
 	    			File[] allfiles = filedir.listFiles();
 	    			for (File tmpfile : allfiles)
@@ -321,38 +326,47 @@ public class DecRawso {
 	    			}
         		}
         		
-	    		sPathName  = sAppFilePath+"/lib/";
+	    		sPathName  = sAppFilePath+"/DecRawsoLib/";
 	    		bWorkat7z = true;
-	    		Dec7zLib(showProgress,true,cont);
+	    		Dec7zLib(showProgress,bClound,cont);
 	    		bSendDecEnd = true;
     		}
     		else //if(!filex.exists())
     		{
-    			sPathName  = sAppFilePath+"/lib/";
+    			sPathName  = sAppFilePath+"/DecRawsoLib/";
     			bWorkat7z = true;
         		
-        		File filecloud = new File(sAppFilePath+"/lib/cloud.txt");
+        		File filecloud = new File(sAppFilePath+"/DecRawsoLib/cloud.txt");
         		if(filecloud.exists())  //need download
         		{
         			mCloudDlr.RegisterCloudDownloader(mAppContext, sAppFilePath);
         		}
-        		else
+        		else //cloud is downloded , rename to cloud
         		{
-        			File filecloudraw = new File(sAppFilePath+"/lib/cloudrawso");
+        			File filecloudraw = new File(sAppFilePath+"/DecRawsoLibCld/");
         			if(filecloudraw.exists())
         			{
-    	    			File[] allfiles = filedir.listFiles();
-    	    			for (File tmpfile : allfiles)
-    	    			{
-    	    				if(tmpfile.compareTo(filex)!=0 && tmpfile.compareTo(filecloudraw)!=0)
-    	    					tmpfile.delete(); 
-    	    			}        				
-        				Dec7zLib(showProgress,false,cont);
-        				bSendDecEnd = true;
+        				File filexcl = new File(sAppFilePath+"/DecRawsoLibCld/decdone_"+localVersion+"_"+lasttime);
+        				if(filexcl.exists())
+        				{
+        					File filecltmp = new File(sAppFilePath+"/DecRawsoLibClTmp/");
+        					filedir.renameTo(filecltmp);
+        					filecloudraw.renameTo(new File(sAppFilePath+"/DecRawsoLib/"));
+        					
+        					File[] allfiles = filecltmp.listFiles();
+        	    			for (File tmpfile : allfiles)
+        	    			{
+        	    				tmpfile.delete();  //_FORCEARM_.tmp will be deleted
+        	    			}     
+        	    			filecltmp.delete();
+        				}
         			}
-        			filecloudraw = null;
-        		}  
-        		filecloud = null;
+        			else if (new File(sAppFilePath+"/DecRawsoLib/cloudrawso").exists())
+        			{
+        				//cloudrawso is exist ,but cloud.txt del, the dec is no finish
+        				Dec7zCloudLib();
+        			}
+        		}  	
     		}
 		}
 
@@ -375,12 +389,80 @@ public class DecRawso {
 		}
 	}
 	
+	class Dec7zCloudLibThread implements Runnable	
+	{
+		int res;
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			res = Decode(null,sAppFilePath+"/DecRawsoLib/cloudrawso",sAppFilePath+"/DecRawsoLibCld/",abi);
+			new File(sAppFilePath+"/DecRawsoLib/cloudrawso").delete(); //after dec, del cloudrawso even it fails.
+			if(0==res)
+			{
+        		File filex = new File(sAppFilePath+"/DecRawsoLibCld/decdone_"+localVersion+"_"+lasttime);
+        		try {
+					filex.createNewFile();
+					filex = null;
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				if(IsArmMode())
+				{
+					File file_armmode = new File(sAppFilePath+"/DecRawsoLibCld/armmode");
+					try {
+						file_armmode.createNewFile();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				
+				while(true)  //kill apk, so will re-enter and use the cloud so.
+				{
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					ActivityManager am = (ActivityManager)mAppContext.getSystemService(Context.ACTIVITY_SERVICE);
+					List<ActivityManager.RunningTaskInfo>  tasksInfo = am.getRunningTasks(1);  
+					if (tasksInfo.size() > 0) {
+						// 应用程序位于堆栈的顶层
+						if (mAppContext.getPackageName().equals(tasksInfo.get(0).topActivity.getPackageName())) {
+							//is forground
+						}
+						else
+						{
+							//android.os.Process.killProcess(android.os.Process.myPid()); //it will not lead the apk exit
+							System.exit(0);
+							break;
+						}
+					}
+					else
+						break;
+				}				
+			}
+		}
+	}
+	
+	void Dec7zCloudLib()
+	{
+		if(sFilter!=null)
+			SetFilter(sFilter,sFix);
+
+		new Thread(new Dec7zCloudLibThread()).start();
+	}	
+	
 	class Dec7zLibThread implements Runnable	
 	{
-		private boolean bLocalDec;
-		public Dec7zLibThread(boolean LocalDec)
+		private boolean bCloudDownload;
+		public Dec7zLibThread(boolean CloudDownload)
 		{
-			bLocalDec = LocalDec;
+			bCloudDownload = CloudDownload;
 		}
 		private int readRawso(String outname)
 		{
@@ -414,42 +496,31 @@ public class DecRawso {
 		@Override
 		public void run() {   
 			int res;
-			if(bLocalDec)
+
+			if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD) //decode on android2.2
 			{
-				if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD) //decode on android2.2
-				{
-					res = readRawso(sAppFilePath+"/lib/rawso22");
-					if(res==0)
-						res = Decode(null,sAppFilePath+"/lib/rawso22",sPathName,abi);
-				}
-				else
-					res = Decode(mAppContext.getAssets(),null,sPathName,abi);
-				
-	        	if(0==res)
-	        	{
-	        		File filex = new File(sAppFilePath+"/lib/decdone_"+localVersion+"_"+lasttime);
-	        		try {
-						filex.createNewFile();
-						filex = null;
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-	        	}
+				res = readRawso(sAppFilePath+"/DecRawsoLib/rawso22");
+				if(res==0)
+					res = Decode(null,sAppFilePath+"/DecRawsoLib/rawso22",sPathName,abi);
 			}
 			else
-			{
-				res = Decode(null,sAppFilePath+"/lib/cloudrawso",sAppFilePath+"/lib/",abi);
-				if(0==res)
-				{
-					File fileraw = new File(sAppFilePath+"/lib/cloudrawso");
-					fileraw.delete();	
-					fileraw = null;
-				}			
-			}
+				res = Decode(mAppContext.getAssets(),null,sPathName,abi);
+			
+        	if(0==res)
+        	{
+        		File filex = new File(sAppFilePath+"/DecRawsoLib/decdone_"+localVersion+"_"+lasttime);
+        		try {
+					filex.createNewFile();
+					filex = null;
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+			
 			if(IsArmMode())
 			{
-				File file_armmode = new File(sAppFilePath+"/lib/armmode");
+				File file_armmode = new File(sAppFilePath+"/DecRawsoLib/armmode");
 				try {
 					file_armmode.createNewFile();
 				} catch (IOException e) {
@@ -458,15 +529,18 @@ public class DecRawso {
 				}
 			}
 			
-    		File filecloud = new File(sAppFilePath+"/lib/cloud.txt");
+    		File filecloud = new File(sAppFilePath+"/DecRawsoLib/cloud.txt");
     		if(filecloud.exists())  //need download
     		{
-    			mCloudDlr.RegisterCloudDownloader(mAppContext, sAppFilePath);
+    			if(bCloudDownload)
+    				mCloudDlr.RegisterCloudDownloader(mAppContext, sAppFilePath);
+    			else 
+    				filecloud.delete();
     		}
     		
     		if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD) //decode on android2.2
     		{
-    			File fileraw22 = new File(sAppFilePath+"/lib/rawso22");
+    			File fileraw22 = new File(sAppFilePath+"/DecRawsoLib/rawso22");
     			if(fileraw22.exists())
     				fileraw22.delete();
     			fileraw22 = null;
@@ -474,7 +548,7 @@ public class DecRawso {
     		
     		mUtils.HackLibPath(sPathName); //only decoding finish then add library path, to avoid load a decoding file 
     		
-        	if(mHdl!=null && !(!bLocalDec&&res!=0))
+        	if(mHdl!=null && res==0)
         	{
         		SendDecEndMsg(res);
         	}
@@ -483,25 +557,13 @@ public class DecRawso {
         		if(res!=0)
         		{
         			mUtils.showToastInThread(geterror(res),mAppContext);
-        			if(!bLocalDec)
-        			{
-						File forcearm = new File(sPathName+"_FORCEARM_.tmp");
-						try {
-							forcearm.createNewFile();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}       				
-        				File filex = new File(sAppFilePath+"/lib/decdone_"+localVersion+"_"+lasttime);
-        				filex.delete(); //if cloud dec error, re decode and use the default arm 
-        			}
         			System.exit(0);
         		}
-        	}
+        	}  	
 		}
 	}
 	
-	private void Dec7zLib(boolean showProgress,boolean bLocalDec,Context cont)
+	private void Dec7zLib(boolean showProgress,boolean bCloudDownload,Context cont)
 	{
 		if(Build.VERSION.SDK_INT<Build.VERSION_CODES.GINGERBREAD)
 			System.loadLibrary("DecRawso22");
@@ -522,7 +584,7 @@ public class DecRawso {
 				
 			}
 		}
-		mDec7zLibThread = new Thread(new Dec7zLibThread(bLocalDec));
+		mDec7zLibThread = new Thread(new Dec7zLibThread(bCloudDownload));
 		mDec7zLibThread.start();
 	}
 	
@@ -599,7 +661,7 @@ public class DecRawso {
 					//if(abi=="x86")  //x86 lib miss, we can use arm lib
 					if(abi.contains("x86"))
 					{
-						File file_armmode = new File(sAppFilePath+"/lib/armmode");
+						File file_armmode = new File(sAppFilePath+"/DecRawsoLib/armmode");
 						if(!file_armmode.exists()) //not work on arm mode , so reboot and redecode
 						{
 							File forcearm = new File(sPathName+"_FORCEARM_.tmp");
@@ -724,10 +786,9 @@ public class DecRawso {
 	 */
 	public static boolean NewInstance(Context cont,Handler hdl,boolean showProgress)
 	{
-		if(DecRawsoSingleton==null || DecRawsoSingleton.mCloudDlr.bReInit)
+		if(DecRawsoSingleton==null )
 		{
 			DecRawsoSingleton = new DecRawso(cont,hdl,showProgress);
-			DecRawsoSingleton.mCloudDlr.bReInit = false;
 			return true;
 		}
 		else 

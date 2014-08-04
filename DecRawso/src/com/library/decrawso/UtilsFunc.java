@@ -1,7 +1,14 @@
 package com.library.decrawso;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 import dalvik.system.BaseDexClassLoader;
@@ -80,8 +87,8 @@ public class UtilsFunc {
 	        
 	        File[] nativepaths = (File[])Libpaths.get(paths);        
 	        File[] tmp = new File[nativepaths.length+1];     
-	        System.arraycopy(nativepaths,0,tmp,0,nativepaths.length);     
-	        tmp[nativepaths.length] = new File(pname);     
+	        System.arraycopy(nativepaths,0,tmp,1,nativepaths.length);     
+	        tmp[0] = new File(pname);      //this is only for x86 devices , all x86 is ICS and over, put the decoding path first
 	        Libpaths.set(paths, tmp);
 
 		}catch (Exception e) {

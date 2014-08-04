@@ -109,6 +109,22 @@ public class ComPressApk {
 		return tmp;
 	}
 	
+	private static void makeEmptyCloud(String Link,String abi,String ApkZiptmpname) 
+	{
+		if(Link==null)
+			return;
+
+		try {
+			BufferedWriter fCloudOut = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(ApkZiptmpname+"/lib/"+abi+"/cloud.txt")));
+			fCloudOut.write(Link+"cloudrawso_"+abi);
+			fCloudOut.close();
+			//TODO add http auto upload
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}	
+	
 	private static void removeLib(File libfolder,String abi,String ApkZiptmpname)
 	{
 		File[] files;
@@ -168,13 +184,14 @@ public class ComPressApk {
 		boolean bSlience = false;
 		boolean bSignApk = true;
 		boolean bX86Check = true;
+		boolean bCompressArm = true;
 		String sOutputName = null;
 		
 		if(args.length<=1 || args[0].compareToIgnoreCase("-h")==0)
 		{
 			outputstr("-a [ApkFullname]\n-k [key storepass keypass alias [name]] --if not use it,use testkey\n-x86 [http link]\n" +
 					"-arm64 [http link]\n-x86_64 [http link]\n-mips64 [http link]\n note: http link do not include the filename\n" +
-					"[-o outputfilename -slience -nosign -nox86check]" +
+					"[-o outputfilename -slience -nosign -nox86check -noarm]" +
 					"ex: ComPressApk.jar -a C:/my/test.apk -k c:/key *** ### alias [name] -x86 http://www.test.com"
 					,bSlience,JarPath);
 			return;
@@ -231,6 +248,10 @@ public class ComPressApk {
 			{
 				bX86Check = false;
 			}	
+			else if(args[i].compareToIgnoreCase("-noarm")==0)
+			{
+				bCompressArm = false;
+			}
 			else if(args[i].compareToIgnoreCase("-o")==0)
 			{
 				if(++i<args.length)
@@ -382,13 +403,13 @@ public class ComPressApk {
 		String ApkZiptmpname = ApkPathname+ getSuffixName(ApkFilename);  //do not change!
 		//---------do not change !! danger! dir delete without any alert-----
 		File rawso,cloudso;
-		File libx86,x86tmp = null;
-		File libx64,x64tmp = null;
-		File libarm;
-		File libarmv7,armv7tmp = null;
-		File libarm64,arm64tmp = null;
+		File libx86=null,x86tmp = null;
+		File libx64=null,x64tmp = null;
+		File libarm=null;
+		File libarmv7=null,armv7tmp = null;
+		File libarm64=null,arm64tmp = null;
 		File libmips = null;
-		File libmips64,mips64tmp = null;
+		File libmips64=null,mips64tmp = null;
 		//OutputStreamWriter fCloudOut;
 		
 		if((rawso = new File(ApkZiptmpname+"/assets/rawso.")).exists())
@@ -406,25 +427,46 @@ public class ComPressApk {
 			cmdfolder+=" "+libx86.getAbsolutePath();
 			x86tmp=makeCloud(x86Link, "x86", ApkZiptmpname, cloudso, libx86);
 		}
+		else
+			makeEmptyCloud(x86Link, "x86", ApkZiptmpname);
+			
 		if((libx64=new File(ApkZiptmpname+"/lib/x86_64")).exists())
 		{
 			cmdfolder+=" "+libx64.getAbsolutePath();
 			x64tmp=makeCloud(x64Link, "x86_64", ApkZiptmpname, cloudso, libx64);
-		}		
-		if((libarm=new File(ApkZiptmpname+"/lib/armeabi")).exists())
+		}	
+		else
+			makeEmptyCloud(x64Link, "x86_64", ApkZiptmpname);
+			
+		if(bCompressArm)
 		{
-			cmdfolder+=" "+libarm.getAbsolutePath();
+			if((libarm=new File(ApkZiptmpname+"/lib/armeabi")).exists())
+			{
+				cmdfolder+=" "+libarm.getAbsolutePath();
+			}
+			if((libarmv7=new File(ApkZiptmpname+"/lib/armeabi-v7a")).exists())
+			{
+				cmdfolder+=" "+libarmv7.getAbsolutePath();
+				armv7tmp=makeCloud(armv7Link, "armeabi-v7a", ApkZiptmpname, cloudso, libarmv7);		
+			}
+			else
+				makeEmptyCloud(armv7Link, "armeabi-v7a", ApkZiptmpname);
+				
+			if((libarm64=new File(ApkZiptmpname+"/lib/arm64")).exists())
+			{
+				cmdfolder+=" "+libarm64.getAbsolutePath();
+				arm64tmp=makeCloud(arm64Link, "arm64", ApkZiptmpname, cloudso, libarm64);		
+			}		
+			else
+				makeEmptyCloud(arm64Link, "arm64", ApkZiptmpname);
 		}
-		if((libarmv7=new File(ApkZiptmpname+"/lib/armeabi-v7a")).exists())
+		else
 		{
-			cmdfolder+=" "+libarmv7.getAbsolutePath();
-			armv7tmp=makeCloud(armv7Link, "armeabi-v7a", ApkZiptmpname, cloudso, libarmv7);		
+			libarm=new File(ApkZiptmpname+"/lib/armeabi");
+			libarmv7=new File(ApkZiptmpname+"/lib/armeabi-v7a");
+			libarm64=new File(ApkZiptmpname+"/lib/arm64");
 		}
-		if((libarm64=new File(ApkZiptmpname+"/lib/arm64")).exists())
-		{
-			cmdfolder+=" "+libarm64.getAbsolutePath();
-			arm64tmp=makeCloud(arm64Link, "arm64", ApkZiptmpname, cloudso, libarm64);		
-		}		
+		
 		if((libmips=new File(ApkZiptmpname+"/lib/mips")).exists())
 		{
 			cmdfolder+=" "+libmips.getAbsolutePath();
@@ -434,6 +476,8 @@ public class ComPressApk {
 			cmdfolder+=" "+libmips64.getAbsolutePath();
 			mips64tmp=makeCloud(mips64Link, "mips64", ApkZiptmpname, cloudso, libmips64);			
 		}
+		else
+			makeEmptyCloud(mips64Link, "mips64", ApkZiptmpname);
 		
 		//check x86 library
 		if(bX86Check && libx86.exists())
@@ -547,9 +591,18 @@ public class ComPressApk {
 		
 		removeLib(libx86,"x86",ApkZiptmpname);
 		removeLib(libx64,"x86_64",ApkZiptmpname);
-		removeLib(libarm,"armeabi",ApkZiptmpname);
-		removeLib(libarmv7,"armeabi-v7a",ApkZiptmpname);
-		removeLib(libarm64,"arm64",ApkZiptmpname);
+		if(bCompressArm)
+		{
+			removeLib(libarm,"armeabi",ApkZiptmpname);
+			removeLib(libarmv7,"armeabi-v7a",ApkZiptmpname);
+			removeLib(libarm64,"arm64",ApkZiptmpname);
+		}
+		else
+		{
+			OsCommand.getInstance().AndroidAapt("r "+ApkCompressname+" lib/x86/libDecRawso22.so",ApkZiptmpname);
+			OsCommand.getInstance().AndroidAapt("r "+ApkCompressname+" lib/x86/libDecRawso.so",ApkZiptmpname);
+			OsCommand.getInstance().AndroidAapt("r "+ApkCompressname+" lib/x86/",ApkZiptmpname);
+		}
 		removeLib(libmips,"mips",ApkZiptmpname);
 		removeLib(libmips64,"mips64",ApkZiptmpname);
 		
