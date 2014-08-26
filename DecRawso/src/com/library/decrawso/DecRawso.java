@@ -254,6 +254,79 @@ public class DecRawso {
 		return null;
 	}	
 	
+	private DecRawso(Context cont)  //call it on service
+	{	
+		bWorkat7z = false;
+		localVersion = 0;
+		dProDlg = null;
+		mDec7zLibThread = null;
+		
+		mHdl = null;
+		mAppContext = cont.getApplicationContext();
+
+		sAppFilePath = cont.getFilesDir().getAbsolutePath();
+		sPathName  = sAppFilePath+"/../lib/";
+		AssetFileDescriptor fd=null;
+ 
+		abi = android.os.Build.CPU_ABI;
+		if(!abi.contains("arm") && !abi.contains("x86") && !abi.contains("mips") && !abi.contains("x32"))
+			abi="armeabi";	
+		//todo:  x86 now will detect as armeabi-v7a
+		String tmpx86abi = getX86abi();
+		if(tmpx86abi!=null)
+		{
+			abi = tmpx86abi;
+			if(abi.contains("x32"))
+				abi = "x86";
+		}
+		
+		//may error , so fd = null
+		AssetManager am = mAppContext.getAssets();
+		try {
+			fd = am.openFd("rawso");
+			fd.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+	
+		if(fd!=null){
+	        try {  
+	            PackageInfo packageInfo = cont.getApplicationContext()  
+	                    .getPackageManager().getPackageInfo(cont.getPackageName(), 0);  
+	            localVersion = packageInfo.versionCode;  
+	            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.GINGERBREAD)
+	            	lasttime = GetLastTime(packageInfo);
+	        } catch (NameNotFoundException e) {  
+	            e.printStackTrace();  
+	        } 
+
+	        File filex = new File(sAppFilePath+"/DecRawsoLib/decdone_"+localVersion+"_"+lasttime);
+	        while(true)
+	        {
+	        	if(filex.exists())
+	        	{ 		
+	        		sPathName  = sAppFilePath+"/DecRawsoLib/";
+	        		bWorkat7z = true;
+	        		break;
+	        	} else
+	        	{
+					try {
+						Thread.sleep(200);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	        	}
+	        }
+		}
+
+		new CrashHandler();  
+		if(bWorkat7z)
+			mUtils.HackLibPath(sPathName);   //only decoding finish then add library path, to avoid load a decoding file 
+	}	
+	
+	
 	private DecRawso(Context cont,Handler hdl,boolean showProgress)
 	{	
 		boolean bSendDecEnd = false;
@@ -299,9 +372,10 @@ public class DecRawso {
 	            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.GINGERBREAD)
 	            	lasttime = GetLastTime(packageInfo);
 	        } catch (NameNotFoundException e) {  
-	            e.printStackTrace();  
-	        } 
-	        
+	            e.printStackTrace(); 
+	            localVersion = 0;
+	            lasttime = 0;
+	        } 				
 	        File filex = new File(sAppFilePath+"/DecRawsoLib/decdone_"+localVersion+"_"+lasttime);
 	        File filedir = new File(sAppFilePath+"/DecRawsoLib/");
     		if(!filex.exists())
@@ -798,6 +872,22 @@ public class DecRawso {
 			return false;
 		}
 	}
+	
+	/*
+	 * you must call it on the service 
+	 */
+	public static boolean NewInstanceInService(Context cont)
+	{
+		if(DecRawsoSingleton==null )
+		{
+			DecRawsoSingleton = new DecRawso(cont,null,false);
+			return true;
+		}
+		else 
+		{
+			return false;
+		}
+	}	
 	
 	/*
 	 * use it the get the singleton

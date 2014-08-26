@@ -155,7 +155,7 @@ public class OsCommand {
         Runtime rn=Runtime.getRuntime();
         try{
         	System.out.println("JarSigner "+apkname);
-        	Process process = rn.exec("java -classpath "+JarPathParent+"tools.jar sun.security.tools.JarSigner -keystore "+
+        	Process process = rn.exec("java -classpath "+JarPath+"../tools.jar sun.security.tools.JarSigner -keystore "+
         			keyname[0]+" -storepass " +keyname[1]+" -keypass "+keyname[2]+" -sigfile "+keyname[4]+" "+apkname+" "+keyname[3]);
         	process.waitFor();
         }catch(Exception e){

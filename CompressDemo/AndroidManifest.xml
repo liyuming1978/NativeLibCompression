@@ -29,6 +29,9 @@
             android:name="com.example.compressdemo.SecondActivity"
             android:label="@string/title_activity_second" >
         </activity>
+        
+		<service android:name ="DemoService" >  
+        </service >         
     </application>
 
 </manifest>

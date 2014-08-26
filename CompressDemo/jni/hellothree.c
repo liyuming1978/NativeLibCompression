@@ -24,7 +24,7 @@
  *   apps/samples/hello-jni/project/src/com/example/hellojni/HelloJni.java
  */
 jstring
-Java_com_example_compressdemo_JNILib_whoamithree( JNIEnv* env,
+Java_com_example_compressdemo_DemoService_whoamithree( JNIEnv* env,
                                                   jobject thiz )
 {
 	return (*env)->NewStringUTF(env, ARCH_STRING);
