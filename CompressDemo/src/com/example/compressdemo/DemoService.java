@@ -11,9 +11,6 @@ import android.os.IBinder;
 public class DemoService  extends Service  {
 
 	private native static String whoamithree();
-	static {
-		System.loadLibrary("hellothree"); 
-	}
 	
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -25,6 +22,7 @@ public class DemoService  extends Service  {
 	public void onCreate() {
 		// TODO Auto-generated method stub
 		DecRawso.NewInstanceInService(this);  //must initial DecRawso in different process
+		System.loadLibrary("hellothree");   //must load after NewInstanceInService
 		super.onCreate();
 	}
 
