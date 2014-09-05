@@ -1,0 +1,14 @@
+//用来禁止lib被压缩，可能有些库需要首先加载，可以不压缩
+//格式如下：
+//#BEGIN
+//#FILENAME: ***.apk
+//lib123.so
+//lib456.so
+//#EDN
+##----------------------------------##
+
+#BEGIN
+#FILENAME:CompressDemo.apk
+libhelloone.so
+
+#EDN

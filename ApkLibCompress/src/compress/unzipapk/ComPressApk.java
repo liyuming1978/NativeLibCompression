@@ -1,5 +1,6 @@
 package compress.unzipapk;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
@@ -391,7 +393,7 @@ public class ComPressApk {
 		}
 		
 		try {
-			unzip(ApkFullname,ApkPathname);
+			unzip(ApkFullname,ApkPathname,JarPath);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -655,9 +657,46 @@ public class ComPressApk {
         // The directory is now empty so now it can be smoked
         return dir.delete();
     }	
+    
+    public static ArrayList<String> getForbidden(String fname,String jarpath)
+    {
+    	ArrayList<String> liststring = null;
+		try {
+			String sline=null;
+			boolean bgotn = false;
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(jarpath+"../exefile/forbidden_list.txt")));
+			
+			while((sline=reader.readLine())!=null)
+			{
+				if(sline.startsWith("#FILENAME:") && sline.indexOf(fname)>0)
+				{
+					liststring = new ArrayList<String>();
+					bgotn = true;
+				}
+				else if(sline.startsWith("#EDN"))
+				{
+					bgotn = false;
+				}
+				
+				if(bgotn && sline.startsWith("lib"))
+				{
+					liststring.add(sline.trim());
+				}
+			}
+			reader.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}						
+
+		return liststring;
+    }
 
 	public static void unzip(final String zipFilePath,
-			final String unzipDirectory) throws Exception {
+			final String unzipDirectory,String jarpath) throws Exception {
 		// 
 		final File file = new File(zipFilePath);
 		// 
@@ -673,6 +712,7 @@ public class ComPressApk {
 		// 
 		InputStream input = null;
 		OutputStream output = null;
+		ArrayList<String> getFbList = getForbidden(file.getName(),jarpath);
 		// 
 		//System.out
 		//		.println("name\t\t\tsize\t\t\tcompressedSize\t\t\tisDirectory");
@@ -689,6 +729,20 @@ public class ComPressApk {
 				continue;
 			if(entryName.contains("libDecRawso.so")||entryName.contains("libDecRawso22.so"))
 				continue;
+			if(getFbList!=null)
+			{
+				boolean bfound=false;
+				for(int ind=0;ind<getFbList.size();ind++)
+				{
+					if(entryName.contains(getFbList.get(ind)))
+					{
+						bfound = true;
+						break;
+					}
+				}
+				if(bfound)
+					continue;
+			}
 
 
 			File Fout= new File(unzipFile.getAbsolutePath() + "/" + entryName);
