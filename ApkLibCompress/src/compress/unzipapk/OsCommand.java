@@ -33,11 +33,12 @@ public class OsCommand {
 		if(OS.indexOf("linux")>=0)
 		{
 			mOsCommand = new OsCommand(jarPath,"../exefile/linux/");	
-			try {
-				Runtime.getRuntime().exec("chmod +x "+jarPath+"../exefile/linux/*");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			//Process p = Runtime.getRuntime().exec("chmod +x "+jarPath+"../exefile/linux/*");
+			//p.waitFor();
+			File[] files = new File(jarPath+"../exefile/linux/").listFiles();
+			for(File file:files)
+			{
+				file.setExecutable(true);
 			}
 		}
 		else if(OS.indexOf("windows")>=0)
@@ -47,11 +48,11 @@ public class OsCommand {
 		else if(OS.indexOf("mac")>=0&&OS.indexOf("os")>0&&OS.indexOf("x")<0)
 		{
 			mOsCommand = new OsCommand(jarPath,"../exefile/mac/");
-			try {
-				Runtime.getRuntime().exec("chmod +x "+jarPath+"../exefile/mac/*");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+
+			File[] files = new File(jarPath+"../exefile/mac/").listFiles();
+			for(File file:files)
+			{
+				file.setExecutable(true);
 			}			
 		}
 		else
