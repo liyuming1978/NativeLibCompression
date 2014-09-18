@@ -880,7 +880,7 @@ public class DecRawso {
 	{
 		if(DecRawsoSingleton==null )
 		{
-			DecRawsoSingleton = new DecRawso(cont,null,false);
+			DecRawsoSingleton = new DecRawso(cont);
 			return true;
 		}
 		else 
