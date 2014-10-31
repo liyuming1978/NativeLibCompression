@@ -45,7 +45,7 @@ public class OsCommand {
 		{
 			mOsCommand = new OsCommand(jarPath,"../exefile/windows/");	
 		}
-		else if(OS.indexOf("mac")>=0&&OS.indexOf("os")>0&&OS.indexOf("x")<0)
+		else if(OS.indexOf("mac")>=0&&OS.indexOf("os")>0 /*&&OS.indexOf("x")<0*/)  //mac os x is also ok
 		{
 			mOsCommand = new OsCommand(jarPath,"../exefile/mac/");
 
