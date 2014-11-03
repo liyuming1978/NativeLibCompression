@@ -66,6 +66,7 @@ public class MainActivity extends Activity {
 			DecRawso.NewInstance(mContext,null,false);
 			// you can also add here, but if decoding use too much time, it will make application no response
 			// if you loadlib just after initial, it will change to sync call (not recommend)
+			DecRawso.GetInstance().waitdecoding();
 			switchto();
 			this.finish();			
 		}
