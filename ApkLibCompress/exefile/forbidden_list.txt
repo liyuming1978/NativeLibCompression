@@ -9,6 +9,5 @@
 
 #BEGIN
 #FILENAME:CompressDemo.apk
-libhelloone.so
 
 #EDN

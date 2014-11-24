@@ -454,19 +454,19 @@ public class ComPressApk {
 			else
 				makeEmptyCloud(armv7Link, "armeabi-v7a", ApkZiptmpname);
 				
-			if((libarm64=new File(ApkZiptmpname+"/lib/arm64")).exists())
+			if((libarm64=new File(ApkZiptmpname+"/lib/arm64-v8a")).exists())
 			{
 				cmdfolder+=" "+libarm64.getAbsolutePath();
-				arm64tmp=makeCloud(arm64Link, "arm64", ApkZiptmpname, cloudso, libarm64);		
+				arm64tmp=makeCloud(arm64Link, "arm64-v8a", ApkZiptmpname, cloudso, libarm64);		
 			}		
 			else
-				makeEmptyCloud(arm64Link, "arm64", ApkZiptmpname);
+				makeEmptyCloud(arm64Link, "arm64-v8a", ApkZiptmpname);
 		}
 		else
 		{
 			libarm=new File(ApkZiptmpname+"/lib/armeabi");
 			libarmv7=new File(ApkZiptmpname+"/lib/armeabi-v7a");
-			libarm64=new File(ApkZiptmpname+"/lib/arm64");
+			libarm64=new File(ApkZiptmpname+"/lib/arm64-v8a");
 		}
 		
 		if((libmips=new File(ApkZiptmpname+"/lib/mips")).exists())
@@ -597,7 +597,7 @@ public class ComPressApk {
 		{
 			removeLib(libarm,"armeabi",ApkZiptmpname);
 			removeLib(libarmv7,"armeabi-v7a",ApkZiptmpname);
-			removeLib(libarm64,"arm64",ApkZiptmpname);
+			removeLib(libarm64,"arm64-v8a",ApkZiptmpname);
 		}
 		else
 		{

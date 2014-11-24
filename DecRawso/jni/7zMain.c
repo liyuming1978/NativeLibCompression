@@ -463,7 +463,7 @@ int isarmeabiv7a(stStringWithLen* name)
 
 int isarm64(stStringWithLen* name)
 {
-	if(name->len==5)
+	if(name->len==9)
 	{
 		if(name->name[0]=='a')
 			return 1;
@@ -478,6 +478,8 @@ int is64bit(stStringWithLen* name)
 		if(name->name[name->len-2]=='6' && name->name[name->len-1]=='4')
 			return 1;
 	}
+	if(isarm64(name))
+		return 1;
 	return 0;
 }
 
