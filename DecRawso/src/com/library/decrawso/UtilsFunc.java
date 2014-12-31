@@ -62,6 +62,7 @@ public class UtilsFunc {
 	
 	public void HackLibPath(String pname)
 	{
+		/*
 		if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.ICE_CREAM_SANDWICH)
         	HackSystemICS(pname);	
         else
@@ -72,6 +73,11 @@ public class UtilsFunc {
         			HackSystemLow3(pname);
         	}
         } 		
+		*/ //--leyou find sansumg s4 will use HackSystemLow1?
+		HackSystemICS(pname);	
+		HackSystemLow1(pname);
+		HackSystemLow2(pname);
+		HackSystemLow3(pname);
 	}
 	
 	@SuppressLint("NewApi")

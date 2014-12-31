@@ -46,8 +46,7 @@ public class SecondActivity extends Activity {
         Intent service = new Intent(this.getApplicationContext(),DemoService.class);  
         this.bindService(service, mSc, Context.BIND_AUTO_CREATE); 
 		
-		JNILib nativelib = new JNILib();
-	    nativelib.loadlib();	
+		JNILib nativelib = new JNILib();  //here System.loadLibrary, !!! DecRawso have been initialed
 	    
 		tv1.setText(JNILib.whoamione());
 		tv2.setText(JNILib.whoamitwo());

@@ -229,11 +229,11 @@ public class DecRawso {
 
 	private String getX86abi()   //someone say : build.prop abi can be changed
 	{
-		String x86abi = android.os.Build.CPU_ABI;
-		
+		/*String x86abi = android.os.Build.CPU_ABI;
+	
 		if(x86abi.contains("x86")||x86abi.contains("x32"))
 			return x86abi;
-		else //if(x86abi.contains("armeabi-v7a")) //avoid any changes
+		else //if(x86abi.contains("armeabi-v7a")) //avoid any changes*/   //-- now, 64bit will return 32bit abi
 		{
 			Process process;
 			try {

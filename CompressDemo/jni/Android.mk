@@ -19,18 +19,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := helloone
 LOCAL_SRC_FILES := helloone.c
 
-ifeq ($(TARGET_ARCH_ABI),x86)
-LOCAL_CFLAGS += -DARCH_STRING=\"libhelloone.so\ is\ x86\"
-endif
-ifeq ($(TARGET_ARCH_ABI),armeabi)
-LOCAL_CFLAGS += -DARCH_STRING=\"libhelloone.so\ is\ armeabi\"
-endif
-ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
-LOCAL_CFLAGS += -DARCH_STRING=\"libhelloone.so\ is\ armeabi-v7a\"
-endif
-ifeq ($(TARGET_ARCH_ABI),mips)
-LOCAL_CFLAGS += -DARCH_STRING=\"libhelloone.so\ is\ mips\"
-endif
+LOCAL_CFLAGS += -DARCH_STRING=\"libhelloone.so\ is\ $(TARGET_ARCH_ABI)\"
 
 include $(BUILD_SHARED_LIBRARY)
 
@@ -39,18 +28,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := hellotwo
 LOCAL_SRC_FILES := hellotwo.c
 
-ifeq ($(TARGET_ARCH_ABI),x86)
-LOCAL_CFLAGS += -DARCH_STRING=\"libhellotwo.so\ is\ x86\"
-endif
-ifeq ($(TARGET_ARCH_ABI),armeabi)
-LOCAL_CFLAGS += -DARCH_STRING=\"libhellotwo.so\ is\ armeabi\"
-endif
-ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
-LOCAL_CFLAGS += -DARCH_STRING=\"libhellotwo.so\ is\ armeabi-v7a\"
-endif
-ifeq ($(TARGET_ARCH_ABI),mips)
-LOCAL_CFLAGS += -DARCH_STRING=\"libhellotwo.so\ is\ mips\"
-endif
+LOCAL_CFLAGS += -DARCH_STRING=\"libhellotwo.so\ is\ $(TARGET_ARCH_ABI)\"
 
 include $(BUILD_SHARED_LIBRARY)
 
@@ -60,16 +38,6 @@ include $(CLEAR_VARS)
 LOCAL_MODULE    := hellothree
 LOCAL_SRC_FILES := hellothree.c
 
-ifeq ($(TARGET_ARCH_ABI),x86)
-LOCAL_CFLAGS += -DARCH_STRING=\"libhellothree.so\ is\ x86\"
-endif
-ifeq ($(TARGET_ARCH_ABI),armeabi)
-LOCAL_CFLAGS += -DARCH_STRING=\"libhellothree.so\ is\ armeabi\"
-endif
-ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
-LOCAL_CFLAGS += -DARCH_STRING=\"libhellothree.so\ is\ armeabi-v7a\"
-endif
-ifeq ($(TARGET_ARCH_ABI),mips)
-LOCAL_CFLAGS += -DARCH_STRING=\"libhellothree.so\ is\ mips\"
-endif
+LOCAL_CFLAGS += -DARCH_STRING=\"libhellothree.so\ is\ $(TARGET_ARCH_ABI)\"
+
 include $(BUILD_SHARED_LIBRARY)
