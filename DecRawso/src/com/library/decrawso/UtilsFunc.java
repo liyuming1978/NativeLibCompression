@@ -94,12 +94,15 @@ public class UtilsFunc {
 	        File[] nativepaths = (File[])Libpaths.get(paths);        
 	        File[] tmp = new File[nativepaths.length+1];     
 	        System.arraycopy(nativepaths,0,tmp,1,nativepaths.length);     
-	        tmp[0] = new File(pname);      //this is only for x86 devices , all x86 is ICS and over, put the decoding path first
+	        tmp[0] = new File(pname);    
 	        Libpaths.set(paths, tmp);
 
 		}catch (Exception e) {
 			e.printStackTrace();
-		}				
+		}catch (java.lang.Error e)//NoClassDefFoundError
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	private boolean HackSystemLow3(String pname) //even older
@@ -120,6 +123,9 @@ public class UtilsFunc {
 		}catch (Exception e) {
 			e.printStackTrace();
 			bret = false;
+		}catch (java.lang.Error e)//NoClassDefFoundError
+		{
+			e.printStackTrace();
 		}
 		return bret;
 	}	
@@ -140,6 +146,9 @@ public class UtilsFunc {
 		}catch (Exception e) {
 			e.printStackTrace();
 			bret = false;
+		}catch (java.lang.Error e)//NoClassDefFoundError
+		{
+			e.printStackTrace();
 		}
 		return bret;
 	}	
@@ -158,6 +167,9 @@ public class UtilsFunc {
 		}catch (Exception e) {
 			e.printStackTrace();
 			bret = false;
+		}catch (java.lang.Error e) //NoClassDefFoundError
+		{
+			e.printStackTrace();
 		}
 		return bret;
 	}	
