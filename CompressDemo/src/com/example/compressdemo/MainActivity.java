@@ -68,7 +68,7 @@ public class MainActivity extends Activity {
 			// if you loadlib just after initial, it will change to sync call (not recommend)
 			DecRawso.GetInstance().waitdecoding();
 			switchto();
-			this.finish();			
+			//this.finish();			
 		}
 		//test for x86
 		//DecRawso.ConfigureFilter("libffmpeg", "libffmpeg_x86xx.so");
