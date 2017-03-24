@@ -85,3 +85,5 @@ reason</span><span style="line-height: 100%; font-family: Arial, sans-serif;"><o
 
 <p class="MsoNormal" align="left" style="line-height: 17.85pt;"><span style="font-family: Arial, sans-serif; line-height: 170%;">&nbsp;&nbsp;&nbsp; :porting.log&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; it will show the x86/arm mix using or x86
 lib missing issue</span></p>
+
+http://blog.csdn.net/onlySound/article/details/58620502
